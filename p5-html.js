@@ -75,8 +75,6 @@
               get: () => this.getAttribute(camelToSnake(setting)),
             })
           );
-          console.log(this.innerHTML);
-
           break;
         }
       }
@@ -87,22 +85,22 @@
         );
     }
     get codeString() {
+      //  Create string to call functions for each setting
+      const setStr = this.#settings.map((s) => `${s}(${this[s]})`).join(";\n");
+
       //  Create string to call function with provided arguments
       const fnStr = `${this.fnName}(${this.#params.map((p) => this[p])})`;
-      //  If there are any setting attributes
-      if (this.#settings.length) {
-        //  Create string to call functions for each setting
-        const setStr = this.#settings
-          .map((s) => `${s}(${this[s]})`)
-          .join("\n;");
-        //  Concat settings and function between push and pop
-        return `push(); 
+
+      const childStr = Array.from(this.children)
+        .map((child) => child.codeString)
+        .join(";\n");
+      //  Concat settings and function between push and pop
+      return `push(); 
         ${setStr}; 
-        ${fnStr}; 
+        ${fnStr} {
+        ${childStr};
+        }
         pop();`;
-      }
-      //  If no settings, return function string only
-      return fnStr;
     }
     get fnName() {
       return this.constructor.name.toLowerCase();
