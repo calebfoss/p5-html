@@ -1,4 +1,8 @@
 (() => {
+  const camelToSnake = (camelStr) => camelStr.replace(/([A-Z])/g, /-).join("-").toLowerCase();
+  console.log(camelToSnake("thisIsATest"));
+  
+  
   class P5El extends HTMLElement {
     constructor() {
       super();
