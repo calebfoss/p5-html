@@ -44,10 +44,11 @@
       super();
 
       let overloadMatch = false;
+      //  Start with overloads with most parameters
+      overloads.reverse();
       for (const i in overloads) {
         const overloadParams = overloads[i]
           .split(",")
-          .reverse()
           .map((s) => s.trim());
         //  Check every required parameter has an attribute
         overloadMatch = overloadParams.every(
@@ -74,6 +75,7 @@
               get: () => this.getAttribute(setting),
             })
           );
+          console.log(this.#settings);
 
           break;
         }
@@ -85,7 +87,10 @@
         );
     }
     get codeString() {
-      return `${this.fnName}(${this.#params.map((p) => this.getAttribute(p))})`;
+      const fnStr = `${this.fnName}(${this.#params.map((p) => this.getAttribute(p))})`;
+      const setStr = this.settings.map(s => `${snakeToCamel(s)}(${this[s]}`)).join(";");
+      if(this.settings.length) return `push(); ${setStr} ${fnStr} pop();`;
+      return fnStr;
     }
     get fnName() {
       return this.constructor.name.toLowerCase();
