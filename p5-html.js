@@ -1,10 +1,10 @@
 (() => {
-  
   //  CASING CONVERTERS
-  const camelToSnake = (camelStr) => camelStr.replace(/[A-Z]/g, letter => "-" + letter.toLowerCase());
-  const snakeToCamel = (snakeStr) => snakeStr.replace(/-./g, s => s[1].toUpperCase());
-  
-  
+  const camelToSnake = (camelStr) =>
+    camelStr.replace(/[A-Z]/g, (letter) => "-" + letter.toLowerCase());
+  const snakeToCamel = (snakeStr) =>
+    snakeStr.replace(/-./g, (s) => s[1].toUpperCase());
+
   class P5El extends HTMLElement {
     constructor() {
       super();
