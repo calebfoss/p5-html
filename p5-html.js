@@ -1,6 +1,10 @@
 (() => {
-  const camelToSnake = (camelStr) => camelStr.replace(/([A-Z])/g, /-).join("-").toLowerCase();
-  console.log(camelToSnake("thisIsATest"));
+  const camelToSnake = (camelStr) => camelStr.replace(/[A-Z]/g, letter => "-" + letter.toLowerCase());
+  const snakeToCamel = (snakeStr) => snakeStr.replace("-.", s => s[1].toUpperCase());
+  const testStr = "thisIsATest";
+  const camelTest = camelToSnake(testStr);
+  const snakeTest = snakeToCamel(camelTest);
+  console.log(camelTest, snakeTest);
   
   
   class P5El extends HTMLElement {
