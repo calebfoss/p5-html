@@ -1,30 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script src="p5/p5.js"></script>
+    <script src="p5/p5.sound.min.js"></script>
+    <script src="p5-html.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="p5/style.css" />
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="https://glitch.com/favicon.ico" />
-
-    <title>Hello world!</title>
-
-    <!-- import the webpage's stylesheet -->
-    <link rel="stylesheet" href="/style.css" />
-
-    <!-- import the webpage's javascript file -->
-    <script src="/script.js" defer></script>
   </head>
   <body>
-    <!-- this is the start of content -->
-    <h1>
-      Hello World!
-    </h1>
-    <p>
-      This starter gives you everything you need to start working on a new
-      website, and nothing more. If you're looking for something a little more
-      opinionated, try remixing
-      <a href="https://glitch.com/edit/#!/remix/glitch-hello-website"
-        >~glitch-hello-website</a
-      >.
-    </p>
+    <p5-sketch width="400" height="400">
+      <p5-state test="123"></p5-state>
+      <p5-background color="'#ffffff'" self-destruct></p5-background>
+      <p5-iterate init="let x = 0" test="x < width" update="x += width / 10">
+        <p5-iterate
+          init="let y = 0"
+          test="y < height"
+          update="y += height / 10"
+        >
+          <p5-rect
+            x="x"
+            y="y"
+            w="width / 10"
+            h="height / 10"
+            fill="0, map(x, 0, width, 0, 255), map(y, 0, height, 0, 255)"
+            noStroke
+          ></p5-rect>
+        </p5-iterate>
+      </p5-iterate>
+      <p5-iterate count="10"
+        ><p5-circle x="random(width)" y="random(height)" d="10"></p5-circle
+      ></p5-iterate>
+      <p5-circle x="test" y="mouseY" d="40"></p5-circle>
+    </p5-sketch>
   </body>
 </html>
