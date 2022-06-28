@@ -66,14 +66,16 @@
           );
 
           //  Save settings with atributes
-          this.#settings = allSettings.filter((s) => this.hasAttribute(s));
+          this.#settings = allSettings.filter((s) =>
+            this.hasAttribute(camelToSnake(s))
+          );
           //  Create getter for each setting attribute
           this.#settings.forEach((setting) =>
             Object.defineProperty(this, setting, {
-              get: () => this.getAttribute(setting),
+              get: () => this.getAttribute(camelToSnake(setting)),
             })
           );
-          console.log(this.#settings);
+          console.log(this.innerHTML);
 
           break;
         }
@@ -91,7 +93,7 @@
       if (this.#settings.length) {
         //  Create string to call functions for each setting
         const setStr = this.#settings
-          .map((s) => `${snakeToCamel(s)}(${this[s]})`)
+          .map((s) => `${s}(${this[s]})`)
           .join("\n;");
         //  Concat settings and function between push and pop
         return `push(); 
@@ -167,7 +169,7 @@
       }
     },
 
-    class Arc extends Primitive2D {
+    class Arc extends P5Function {
       constructor() {
         const overloads = [
           "x, y, w, h, start, stop, [mode], [detail], image, [a]",
@@ -175,31 +177,31 @@
         super(overloads);
       }
     },
-    class Ellipse extends Primitive2D {
+    class Ellipse extends P5Function {
       constructor() {
         const overloads = ["x, y, w, [h]", "x, y, w, h, [detail]"];
         super(overloads);
       }
     },
-    class Circle extends Primitive2D {
+    class Circle extends P5Function {
       constructor() {
         const overloads = ["x, y, d"];
         super(overloads);
       }
     },
-    class Line extends Primitive2D {
+    class Line extends P5Function {
       constructor() {
         const overloads = ["x1, y1, x2, y2", "x1, y1, z1, x2, y2, z2"];
         super(overloads);
       }
     },
-    class Point extends Primitive2D {
+    class Point extends P5Function {
       constructor() {
         const overloads = ["x, y, [z]", "coordinate_vector"];
         super(overloads);
       }
     },
-    class Quad extends Primitive2D {
+    class Quad extends P5Function {
       constructor() {
         const overloads = [
           "x1, y1, x2, y2, x3, y3, x4, y4, [detailX], [detailY]",
@@ -208,7 +210,7 @@
         super(overloads);
       }
     },
-    class Rect extends Primitive2D {
+    class Rect extends P5Function {
       constructor() {
         const overloads = [
           "x, y, w, [h], [tl], [tr], [br], [bl]",
@@ -217,13 +219,13 @@
         super(overloads);
       }
     },
-    class Square extends Primitive2D {
+    class Square extends P5Function {
       constructor() {
         const overloads = ["x, y, s, [tl], [tr], [br], [bl]"];
         super(overloads);
       }
     },
-    class Triangle extends Primitive2D {
+    class Triangle extends P5Function {
       constructor() {
         const overloads = ["x1, y1, x2, y2, x3, y3"];
         super(overloads);
@@ -239,7 +241,6 @@ const sketch = document.querySelector("p5-sketch");
 
 function setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
-  console.log("HERE");
 }
 
 function draw() {
