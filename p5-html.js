@@ -14,11 +14,11 @@
 
   class P5Function extends P5El {
     #params;
+    #settings;
 
     constructor(overloads) {
       super();
 
-      this.#params = [];
       let overloadMatch = false;
       for (const i in overloads) {
         const overloadParams = overloads[i].split(",").map((s) => s.trim());
@@ -37,6 +37,9 @@
             Object.defineProperty(this, param, {
               get: () => this.getAttribute(param),
             })
+          );
+          this.#settings = Array.from(this.attributes).filter((a) =>
+            this.#params.every((p) => a.name !== p)
           );
           break;
         }
