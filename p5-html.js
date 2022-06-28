@@ -4,6 +4,30 @@
     camelStr.replace(/[A-Z]/g, (letter) => "-" + letter.toLowerCase());
   const snakeToCamel = (snakeStr) =>
     snakeStr.replace(/-./g, (s) => s[1].toUpperCase());
+  const allSettings = [
+    "translate",
+    "rotate",
+    "rotateX",
+    "rotateY",
+    "rotateZ",
+    "scale",
+    "shearX",
+    "shearY",
+    "colorMode",
+    "erase",
+    "noErase",
+    "fill",
+    "noFill",
+    "noStroke",
+    "stroke",
+    "ellipseMode",
+    "noSmooth",
+    "rectMode",
+    "smooth",
+    "strokeCap",
+    "strokeJoin",
+    "strokeWeight",
+  ];
 
   class P5El extends HTMLElement {
     constructor() {
@@ -21,7 +45,10 @@
 
       let overloadMatch = false;
       for (const i in overloads) {
-        const overloadParams = overloads[i].split(",").map((s) => s.trim());
+        const overloadParams = overloads[i]
+          .split(",")
+          .reverse()
+          .map((s) => s.trim());
         //  Check every required parameter has an attribute
         overloadMatch = overloadParams.every(
           (p) =>
@@ -32,15 +59,22 @@
         if (overloadMatch) {
           //  Save parameters with attributes
           this.#params = overloadParams.filter((p) => this.hasAttribute(p));
-          //  Create getter for each attribute
+          //  Create getter for each parameter attribute
           this.#params.forEach((param) =>
             Object.defineProperty(this, param, {
               get: () => this.getAttribute(param),
             })
           );
-          this.#settings = Array.from(this.attributes).filter((a) =>
-            this.#params.every((p) => a.name !== p)
+
+          //  Save settings with atributes
+          this.#settings = allSettings.filter((s) => this.hasAttribute(s));
+          //  Create getter for each setting attribute
+          this.#settings.forEach((setting) =>
+            Object.defineProperty(this, setting, {
+              get: () => this.getAttribute(setting),
+            })
           );
+
           break;
         }
       }
