@@ -47,9 +47,7 @@
       //  Start with overloads with most parameters
       overloads.reverse();
       for (const i in overloads) {
-        const overloadParams = overloads[i]
-          .split(",")
-          .map((s) => s.trim());
+        const overloadParams = overloads[i].split(",").map((s) => s.trim());
         //  Check every required parameter has an attribute
         overloadMatch = overloadParams.every(
           (p) =>
@@ -87,9 +85,21 @@
         );
     }
     get codeString() {
-      const fnStr = `${this.fnName}(${this.#params.map((p) => this.getAttribute(p))})`;
-      const setStr = this.settings.map(s => `${snakeToCamel(s)}(${this[s]}`)).join(";");
-      if(this.settings.length) return `push(); ${setStr} ${fnStr} pop();`;
+      //  Create string to call function with provided arguments
+      const fnStr = `${this.fnName}(${this.#params.map((p) => this[p])})`;
+      //  If there are any setting attributes
+      if (this.#settings.length) {
+        //  Create string to call functions for each setting
+        const setStr = this.#settings
+          .map((s) => `${snakeToCamel(s)}(${this[s]})`)
+          .join("\n;");
+        //  Concat settings and function between push and pop
+        return `push(); 
+        ${setStr}; 
+        ${fnStr}; 
+        pop();`;
+      }
+      //  If no settings, return function string only
       return fnStr;
     }
     get fnName() {
@@ -108,39 +118,6 @@
         ...overloads,
       ];
       super(overloads);
-    }
-  }
-
-  class Primitive2D extends P5Function {
-    static colorProps = ["fill", "noFill", "noStroke", "stroke"];
-    static transProps = [
-      "translate",
-      "rotate",
-      "rotateX",
-      "rotateY",
-      "rotateZ",
-      "scale",
-      "shearX",
-      "shearY",
-    ];
-
-    constructor(overloads) {
-      super(overloads);
-    }
-    get codeString() {
-      const colorString = Primitive2D.colorProps
-        .filter((prop) => this.hasAttribute(prop))
-        .map((prop) => `${prop}(${this.getAttribute(prop)})`)
-        .join(";");
-      const transString = Primitive2D.transProps
-        .filter((prop) => this.hasAttribute(prop))
-        .map((prop) => `${prop}(${this.getAttribute(prop)})`)
-        .join(";");
-      return `push();
-      ${colorString};
-      ${transString};
-      ${super.codeString};
-      pop()`;
     }
   }
   const els = [
