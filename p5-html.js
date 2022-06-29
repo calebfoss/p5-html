@@ -1,7 +1,7 @@
 (() => {
   //  CASING CONVERTERS
   const camelToSnake = (camelStr) =>
-    camelStr.replace(/[A-Z]/g, (letter) => "-" + letter.toLowerCase());
+    camelStr.replace(/(?<!^)[A-Z]/g, (letter) => "-" + letter).toLowerCase();
   const snakeToCamel = (snakeStr) =>
     snakeStr.replace(/-./g, (s) => s[1].toUpperCase());
   const allSettings = [
@@ -155,7 +155,7 @@
       }
       get codeString() {
         return `${this.setStr}
-        ${this.childStr}`
+        ${this.childStr}`;
       }
     },
     class Iterate extends P5BlockStarter {
@@ -180,6 +180,11 @@
         return "else";
       }
     },
+    class IfElse extends P5BlockStarter {
+      constructor() {
+        super("condition");
+      }
+    }
     class State extends P5El {
       constructor() {
         super();
@@ -262,7 +267,7 @@
     },
   ];
   for (const i in els) {
-    customElements.define(`p5-${els[i].name.toLowerCase()}`, els[i]);
+    customElements.define(`p5-${camelToSnake(els[i].name)}`, els[i]);
   }
 })();
 
