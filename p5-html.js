@@ -37,8 +37,6 @@
   }
 
   class P5Function extends P5El {
-    #params;
-
     constructor(overloads) {
       super();
       console.log(this.constructor.name);
@@ -56,9 +54,9 @@
         //  If matched overload found
         if (overloadMatch) {
           //  Save parameters with attributes
-          this.#params = overloadParams.filter((p) => this.hasAttribute(p));
+          this.params = overloadParams.filter((p) => this.hasAttribute(p));
           //  Create getter for each parameter attribute
-          this.#params.forEach((param) =>
+          this.params.forEach((param) =>
             Object.defineProperty(this, param, {
               get: () => this.getAttribute(param),
             })
@@ -88,7 +86,7 @@
       const setStr = this.settings.map((s) => `${s}(${this[s]})`).join(";\n");
 
       //  Create string to call function with provided arguments
-      const fnStr = `${this.fnName}(${this.#params.map((p) => this[p])})`;
+      const fnStr = `${this.fnName}(${this.params.map((p) => this[p])})`;
 
       const childStr = Array.from(this.children)
         .map((child) => child.codeString)
@@ -120,8 +118,6 @@
   }
 
   class P5BlockStarter extends P5Function {
-    #params;
-    
     constructor(overloads) {
       super(overloads);
       console.log(this.settings);
@@ -131,7 +127,9 @@
       const setStr = this.settings.map((s) => `${s}(${this[s]})`).join(";\n");
 
       //  Create string to call function with provided arguments
-      const fnStr = `${this.fnName}(${this.#params.map((p) => this[p])})`;
+      const fnStr = `${this.fnName}(${this.params
+        .map((p) => this[p])
+        .join(";")})`;
 
       const childStr = Array.from(this.children)
         .map((child) => child.codeString)
@@ -158,23 +156,13 @@
       }
     },
     class Iterate extends P5BlockStarter {
-      #settings;
-      
       constructor() {
-        super(["count", "init, test, update"]);
-        console.log(this.settings);
+        super(["test", "init, test, update"]);
       }
-      // get codeString() {
-      //   const init = this.init || "let i = 0";
-      //   const test = this.test || `i < ${this.count}`;
-      //   const update = this.update || "i++";
-      //   const childCode = Array.from(this.children)
-      //     .map((c) => c.codeString)
-      //     .join(";");
-      //   return `for(${init}; ${test}; ${update}) {
-      //     ${childCode}
-      //   }`;
-      // }
+      get fnName() {
+        if (this.params[0] === "test") return "while";
+        return "for";
+      }
     },
 
     class State extends P5El {
