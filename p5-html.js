@@ -33,13 +33,6 @@
     constructor() {
       super();
       els.push(this);
-    }
-  }
-
-  class P5Function extends P5El {
-    constructor(overloads) {
-      super();
-
       //  Save settings with atributes
       this.settings = allSettings.filter((s) =>
         this.hasAttribute(camelToSnake(s))
@@ -50,6 +43,12 @@
           get: () => this.getAttribute(camelToSnake(setting)),
         })
       );
+    }
+  }
+
+  class P5Function extends P5El {
+    constructor(overloads) {
+      super();
 
       let overloadMatch = false;
       //  Start with overloads with most parameters
@@ -85,13 +84,12 @@
           `No overloads for ${this.fnName} match provided parameters:`,
           this.attributes
         );
-      console.log(this.constructor.name, this.codeString);
     }
     get childStr() {
       return this.children.length
         ? Array.from(this.children)
             .map((child) => child.codeString)
-            .join(";\n") + ";"
+            .join("\n")
         : "";
     }
     get codeString() {
@@ -99,7 +97,7 @@
       return `push(); 
         ${this.setStr}; 
         ${this.fnStr};
-        ${this.childStr};
+        ${this.childStr}
         pop();`;
     }
     get fnName() {
@@ -112,7 +110,7 @@
     //  Create string to call functions for each setting
     get setStr() {
       return this.settings.length
-        ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n") + ";"
+        ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n")
         : "";
     }
   }
@@ -139,14 +137,14 @@
       //  Concat settings and function between push and pop
       return `${this.fnStr} {
           push();
-          ${this.setStr}
-          ${this.childStr};
+          ${this.setStr};
+          ${this.childStr}
           pop();
         }`;
     }
     //  Create string to call function with provided arguments
     get fnStr() {
-      return `${this.fnName}(${this.params.map((p) => this[p]).join(";")})`;
+      return `${this.fnName}(${this.params.map((p) => this[p]).join("; ")})`;
     }
   }
   const els = [
@@ -188,11 +186,9 @@
         super();
       }
       get codeString() {
-        return (
-          Array.from(this.attributes)
-            .map((a) => `${a.name} = ${this.getAttribute(a.name)}`)
-            .join(";") + ";"
-        );
+        return Array.from(this.attributes)
+          .map((a) => `${a.name} = ${this.getAttribute(a.name)};\n`)
+          .join("");
       }
     },
 
@@ -275,7 +271,6 @@ const sketch = document.querySelector("p5-sketch");
 
 function setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
-  console.log(sketch.codeString);
 }
 
 function draw() {
