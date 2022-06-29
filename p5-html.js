@@ -8,19 +8,15 @@ import { camelToSnake } from "./modules/utils.js";
   const els = [Color, Base, Logic, Shape]
     .map((module) => Object.entries(module).map(([key, value]) => value))
     .flat();
-  console.log(els);
   for (const i in els) {
     customElements.define(`p5-${camelToSnake(els[i].name)}`, els[i]);
   }
 })();
 
 const sketch = document.querySelector("p5-sketch");
-console.log(sketch);
 
 window["setup"] = function setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
-  print(sketch.codeString("\t"));
-  noLoop();
 };
 
 window["draw"] = function draw() {
