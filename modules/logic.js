@@ -1,4 +1,4 @@
-import {P5BlockStarter} from "./base.js";
+import { P5BlockStarter } from "./base.js";
 
 class Iterate extends P5BlockStarter {
   constructor() {
@@ -25,11 +25,13 @@ class Else extends P5BlockStarter {
   }
 }
 
-class ElseIf extends P5BlockStarter {
+class ElseIf extends If {
   constructor() {
-    super(["condition"]);
+    super();
   }
   fnStr(tabs) {
     return `${tabs}else if(${this.condition})`;
   }
 }
+
+export { Iterate, If, Else, ElseIf };

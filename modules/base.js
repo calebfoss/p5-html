@@ -3,7 +3,6 @@ import { allSettings, camelToSnake, snakeToCamel } from "./utils.js";
 class P5El extends HTMLElement {
   constructor() {
     super();
-    els.push(this);
     //  Save settings with atributes
     this.settings = allSettings.filter((s) =>
       this.hasAttribute(camelToSnake(s))

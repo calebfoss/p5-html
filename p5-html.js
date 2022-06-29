@@ -15,8 +15,9 @@ import { camelToSnake } from "./modules/utils.js";
 })();
 
 const sketch = document.querySelector("p5-sketch");
+console.log(sketch);
 
-function setup() {
+window[setup] setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
   print(sketch.codeString("\t"));
 }
