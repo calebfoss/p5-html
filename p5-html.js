@@ -1,23 +1,10 @@
-import primitives2D from "./modules/shape.js";
+import {primitives2D} from "./modules/shape.js";
+import * as Base from "./modules/base.js";
 
 (() => {
 
   const els = [
-    class Setting extends P5El {
-      constructor() {
-        super();
-      }
-    },
-    class Sketch extends P5Function {
-      constructor() {
-        const overloads = ["width, height, [renderer]"];
-        super(overloads);
-      }
-      codeString(tabs) {
-        return `${this.setStr(tabs)}
-        ${this.childStr(tabs)}`;
-      }
-    },
+
     class Iterate extends P5BlockStarter {
       constructor() {
         super(["test", "init, test, update"]);
@@ -64,7 +51,7 @@ import primitives2D from "./modules/shape.js";
         const overloads = ["colorstring, [a]", "gray, [a]", "v1, v2, v3, [a]"];
         super(overloads);
       }
-    },
+    },...Base,
     ...primitives2D,
   ];
   for (const i in els) {

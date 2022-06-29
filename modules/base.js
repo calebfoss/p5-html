@@ -148,7 +148,24 @@ class P5BlockStarter extends P5Function {
   }
 }
 
-export default {
+class Setting extends P5El {
+  constructor() {
+    super();
+  }
+}
+
+class Sketch extends P5Function {
+  constructor() {
+    const overloads = ["width, height, [renderer]"];
+    super(overloads);
+  }
+  codeString(tabs) {
+    return `${this.setStr(tabs)}
+        ${this.childStr(tabs)}`;
+  }
+}
+
+export {
   camelToSnake,
   snakeToCamel,
   allSettings,
@@ -156,4 +173,6 @@ export default {
   P5Function,
   P5ColorFunction,
   P5BlockStarter,
+  Setting,
+  Sketch,
 };

@@ -65,4 +65,4 @@ const primitives2D = [
   },
 ];
 
-export default {primitives2D};
+export {primitives2D};
