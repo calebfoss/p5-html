@@ -154,9 +154,8 @@
         super(overloads);
       }
       get codeString() {
-        return Array.from(this.children)
-          .map((c) => c.codeString)
-          .join("\n");
+        return `${this.setStr}
+        ${this.childStr}`
       }
     },
     class Iterate extends P5BlockStarter {
