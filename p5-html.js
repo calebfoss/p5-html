@@ -125,27 +125,28 @@
   class P5BlockStarter extends P5Function {
     constructor(overloads) {
       super(overloads);
-      console.log(this.constructor.name, this.settings);
+      console.log(this.codeString);
     }
     get codeString() {
       //  Create string to call functions for each setting
       const setStr = this.settings.map((s) => `${s}(${this[s]})`).join(";\n");
 
-      //  Create string to call function with provided arguments
-      const fnStr = `${this.fnName}(${this.params
-        .map((p) => this[p])
-        .join(";")})`;
-
       const childStr = Array.from(this.children)
         .map((child) => child.codeString)
         .join(";\n");
       //  Concat settings and function between push and pop
-      return `${fnStr} {
+      return `${this.fnStr} {
           push();
-          ${setStr};
-          ${childStr};
+          ${setStr.length ? setStr + ";" : ""}
+          ${childStr.length ? childStr + ";": ""};
           pop();
         }`;
+    }
+    //  Create string to call function with provided arguments
+    get fnStr() {
+      return `${this.fnName}(${this.params
+        .map((p) => this[p])
+        .join(";")})`;
     }
   }
   const els = [
@@ -178,6 +179,10 @@
       constructor() {
         super([]);
       }
+      get fnStr() {
+        return "else";
+      }
+      
     },
     class State extends P5El {
       constructor() {
@@ -186,7 +191,7 @@
       get codeString() {
         return Array.from(this.attributes)
           .map((a) => `${a.name} = ${this.getAttribute(a.name)}`)
-          .join(";");
+          .join(";") + ";";
       }
     },
 
@@ -274,7 +279,7 @@ function setup() {
 function draw() {
   const codeString = Array.from(sketch.children)
     .map((c) => c.codeString)
-    .join(";");
+    .join("");
   Function(codeString)();
   for (let i = 0; i < sketch.children.length; i++) {
     if (sketch.children[i].hasAttribute("self-destruct")) {
