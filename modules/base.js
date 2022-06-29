@@ -115,8 +115,7 @@ class Sketch extends P5Function {
     super(overloads);
   }
   codeString(tabs) {
-    return `${this.setStr(tabs)}
-        ${this.childStr(tabs)}`;
+    return `${this.setStr(tabs)}${this.childStr(tabs)}`;
   }
 }
 
@@ -124,13 +123,13 @@ class State extends P5El {
   constructor() {
     super();
   }
-  assignString(tabs) {
+  assignStr(tabs) {
     return Array.from(this.attributes)
       .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};`)
       .join("\n");
   }
   codeString(tabs) {
-    return `${setString}`
+    return `${this.setStr(tabs)}${this.assignStr(tabs)}`;
   }
 }
 

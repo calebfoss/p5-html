@@ -20,6 +20,7 @@ console.log(sketch);
 window["setup"] = function setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
   print(sketch.codeString("\t"));
+  noLoop();
 };
 
 window["draw"] = function draw() {
