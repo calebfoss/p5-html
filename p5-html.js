@@ -85,22 +85,27 @@
           `No overloads for ${this.fnName} match provided parameters:`,
           this.attributes
         );
+      console.log(this.constructor.name, this.codeString);
     }
     get codeString() {
       //  Create string to call functions for each setting
-      const setStr = this.settings.map((s) => `${s}(${this[s]})`).join(";\n");
+      const setStr = this.settings.length
+        ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n") + ";"
+        : "";
 
       //  Create string to call function with provided arguments
       const fnStr = `${this.fnName}(${this.params.map((p) => this[p])})`;
 
-      const childStr = Array.from(this.children)
-        .map((child) => child.codeString)
-        .join(";\n");
+      const childStr = this.children.length
+        ? Array.from(this.children)
+            .map((child) => child.codeString)
+            .join(";\n") + ";"
+        : "";
       //  Concat settings and function between push and pop
       return `push(); 
         ${setStr}; 
         ${fnStr};
-        ${childStr};
+        ${childStr.length ? childStr + ";" : ""};
         pop();`;
     }
     get fnName() {
@@ -125,28 +130,29 @@
   class P5BlockStarter extends P5Function {
     constructor(overloads) {
       super(overloads);
-      console.log(this.codeString);
     }
     get codeString() {
       //  Create string to call functions for each setting
-      const setStr = this.settings.map((s) => `${s}(${this[s]})`).join(";\n");
+      const setStr = this.settings.length
+        ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n") + ";"
+        : "";
 
-      const childStr = Array.from(this.children)
-        .map((child) => child.codeString)
-        .join(";\n");
+      const childStr = this.children.length
+        ? Array.from(this.children)
+            .map((child) => child.codeString)
+            .join(";\n") + ";"
+        : "";
       //  Concat settings and function between push and pop
       return `${this.fnStr} {
           push();
-          ${setStr.length ? setStr + ";" : ""}
-          ${childStr.length ? childStr + ";": ""};
+          ${setStr}
+          ${childStr};
           pop();
         }`;
     }
     //  Create string to call function with provided arguments
     get fnStr() {
-      return `${this.fnName}(${this.params
-        .map((p) => this[p])
-        .join(";")})`;
+      return `${this.fnName}(${this.params.map((p) => this[p]).join(";")})`;
     }
   }
   const els = [
@@ -182,16 +188,17 @@
       get fnStr() {
         return "else";
       }
-      
     },
     class State extends P5El {
       constructor() {
         super();
       }
       get codeString() {
-        return Array.from(this.attributes)
-          .map((a) => `${a.name} = ${this.getAttribute(a.name)}`)
-          .join(";") + ";";
+        return (
+          Array.from(this.attributes)
+            .map((a) => `${a.name} = ${this.getAttribute(a.name)}`)
+            .join(";") + ";"
+        );
       }
     },
 
@@ -279,7 +286,7 @@ function setup() {
 function draw() {
   const codeString = Array.from(sketch.children)
     .map((c) => c.codeString)
-    .join("");
+    .join("\n");
   Function(codeString)();
   for (let i = 0; i < sketch.children.length; i++) {
     if (sketch.children[i].hasAttribute("self-destruct")) {
