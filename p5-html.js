@@ -2,11 +2,13 @@ import * as Base from "./modules/base.js";
 import * as Color from "./modules/color.js";
 import * as Logic from "./modules/logic.js";
 import * as Shape from "./modules/shape.js";
+import { camelToSnake } from "./modules/utils.js";
 
 (() => {
   const els = [Color, Base, Logic, Shape]
-    .map((module) => Object.entries(module))
+    .map((module) => Object.entries(module).map(([key, value]) => value))
     .flat();
+  console.log(els);
   for (const i in els) {
     customElements.define(`p5-${camelToSnake(els[i].name)}`, els[i]);
   }

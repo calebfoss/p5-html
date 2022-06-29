@@ -1,4 +1,4 @@
-import {camelToSnake} from "./utils.js";
+import { allSettings, camelToSnake, snakeToCamel } from "./utils.js";
 
 class P5El extends HTMLElement {
   constructor() {
@@ -132,13 +132,4 @@ class State extends P5El {
   }
 }
 
-export {
-  camelToSnake,
-  snakeToCamel,
-  allSettings,
-  P5El,
-  P5Function,
-  P5BlockStarter,
-  Setting,
-  Sketch,
-};
+export { P5El, P5Function, P5BlockStarter, Setting, Sketch };
