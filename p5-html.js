@@ -37,11 +37,9 @@
       this.settings = allSettings.filter((s) =>
         this.hasAttribute(camelToSnake(s))
       );
-      //  Create getter for each setting attribute
-      this.settings.forEach((setting) =>
-        Object.defineProperty(this, setting, {
-          get: () => this.getAttribute(camelToSnake(setting)),
-        })
+      //  Create property for each setting and assign attribute value
+      this.settings.forEach(
+        (setting) => (this[setting] = this.getAttribute(camelToSnake(setting)))
       );
     }
   }
@@ -70,11 +68,9 @@
         if (overloadMatch) {
           //  Save parameters with attributes
           this.params = overloadParams.filter((p) => this.hasAttribute(p));
-          //  Create getter for each parameter attribute
-          this.params.forEach((param) =>
-            Object.defineProperty(this, param, {
-              get: () => this.getAttribute(param),
-            })
+          //  Create property for each parameter and assign attribute value
+          this.params.forEach(
+            (param) => (this[param] = this.getAttribute(param))
           );
           break;
         }
