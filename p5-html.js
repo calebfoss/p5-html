@@ -87,29 +87,33 @@
         );
       console.log(this.constructor.name, this.codeString);
     }
-    get codeString() {
-      //  Create string to call functions for each setting
-      const setStr = this.settings.length
-        ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n") + ";"
-        : "";
-
-      //  Create string to call function with provided arguments
-      const fnStr = `${this.fnName}(${this.params.map((p) => this[p])})`;
-
-      const childStr = this.children.length
+    get childStr() {
+      return this.children.length
         ? Array.from(this.children)
             .map((child) => child.codeString)
             .join(";\n") + ";"
         : "";
+    }
+    get codeString() {
       //  Concat settings and function between push and pop
       return `push(); 
-        ${setStr}; 
-        ${fnStr};
-        ${childStr.length ? childStr + ";" : ""};
+        ${this.setStr}; 
+        ${this.fnStr};
+        ${this.childStr};
         pop();`;
     }
     get fnName() {
       return this.constructor.name.toLowerCase();
+    }
+    //  Create string to call function with provided arguments
+    get fnStr() {
+      return `${this.fnName}(${this.params.map((p) => this[p])})`;
+    }
+    //  Create string to call functions for each setting
+    get setStr() {
+      return this.settings.length
+        ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n") + ";"
+        : "";
     }
   }
 
@@ -132,21 +136,11 @@
       super(overloads);
     }
     get codeString() {
-      //  Create string to call functions for each setting
-      const setStr = this.settings.length
-        ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n") + ";"
-        : "";
-
-      const childStr = this.children.length
-        ? Array.from(this.children)
-            .map((child) => child.codeString)
-            .join(";\n") + ";"
-        : "";
       //  Concat settings and function between push and pop
       return `${this.fnStr} {
           push();
-          ${setStr}
-          ${childStr};
+          ${this.setStr}
+          ${this.childStr};
           pop();
         }`;
     }
@@ -163,8 +157,8 @@
       }
       get codeString() {
         return Array.from(this.children)
-          .map((c) => c.drawString)
-          .join(";");
+          .map((c) => c.codeString)
+          .join("\n");
       }
     },
     class Iterate extends P5BlockStarter {
@@ -281,13 +275,11 @@ const sketch = document.querySelector("p5-sketch");
 
 function setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
+  console.log(sketch.codeString);
 }
 
 function draw() {
-  const codeString = Array.from(sketch.children)
-    .map((c) => c.codeString)
-    .join("\n");
-  Function(codeString)();
+  Function(sketch.codeString)();
   for (let i = 0; i < sketch.children.length; i++) {
     if (sketch.children[i].hasAttribute("self-destruct")) {
       sketch.children[i].remove();
