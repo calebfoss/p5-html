@@ -30,9 +30,8 @@
       <p5-iterate init="let i = 0" test="i < 10" update="i++">
         <p5-if condition="i % 2 === 0"
           ><p5-circle x="width / 4" y="i" d="10"></p5-circle> </p5-if
-        ><p5-else> 
-        
-        <p5-square x="width * 0.75" y ="i" s=""
+        ><p5-else>
+          <p5-square x="width * 0.75" y="i" s="10"></p5-square>
         </p5-else>
       </p5-iterate>
       <p5-circle x="test" y="mouseY" d="40"></p5-circle>

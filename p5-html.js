@@ -39,10 +39,26 @@
   class P5Function extends P5El {
     constructor(overloads) {
       super();
-      console.log(this.constructor.name);
+
+      //  Save settings with atributes
+      this.settings = allSettings.filter((s) =>
+        this.hasAttribute(camelToSnake(s))
+      );
+      //  Create getter for each setting attribute
+      this.settings.forEach((setting) =>
+        Object.defineProperty(this, setting, {
+          get: () => this.getAttribute(camelToSnake(setting)),
+        })
+      );
+
       let overloadMatch = false;
       //  Start with overloads with most parameters
       overloads.reverse();
+      if (overloads.length === 0) {
+        this.params = [];
+        this.settings = [];
+        overloadMatch = true;
+      }
       for (const i in overloads) {
         const overloadParams = overloads[i].split(",").map((s) => s.trim());
         //  Check every required parameter has an attribute
@@ -59,17 +75,6 @@
           this.params.forEach((param) =>
             Object.defineProperty(this, param, {
               get: () => this.getAttribute(param),
-            })
-          );
-
-          //  Save settings with atributes
-          this.settings = allSettings.filter((s) =>
-            this.hasAttribute(camelToSnake(s))
-          );
-          //  Create getter for each setting attribute
-          this.settings.forEach((setting) =>
-            Object.defineProperty(this, setting, {
-              get: () => this.getAttribute(camelToSnake(setting)),
             })
           );
           break;
@@ -120,7 +125,7 @@
   class P5BlockStarter extends P5Function {
     constructor(overloads) {
       super(overloads);
-      console.log(this.settings);
+      console.log(this.constructor.name, this.settings);
     }
     get codeString() {
       //  Create string to call functions for each setting
@@ -135,12 +140,12 @@
         .map((child) => child.codeString)
         .join(";\n");
       //  Concat settings and function between push and pop
-      return `push(); 
-        ${setStr}; 
-        ${fnStr} {
-        ${childStr};
-        }
-        pop();`;
+      return `${fnStr} {
+          push();
+          ${setStr};
+          ${childStr};
+          pop();
+        }`;
     }
   }
   const els = [
@@ -172,11 +177,6 @@
     class Else extends P5BlockStarter {
       constructor() {
         super([]);
-      }
-    },
-    class ElseIf extends If {
-      constructor() {
-        super();
       }
     },
     class State extends P5El {
