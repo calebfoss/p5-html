@@ -84,8 +84,9 @@
     childStr(tabs) {
       return this.children.length
         ? Array.from(this.children)
-            .map((child) => child instanceof P5El ? child.codeString(tabs) : "";
-            })
+            .map((child) =>
+              child instanceof P5El ? child.codeString(tabs) : ""
+            )
             .join("\n")
         : "";
     }
@@ -142,7 +143,7 @@ ${tabs}}`;
     }
     //  Create string to call function with provided arguments
     fnStr(tabs) {
-      return `${this.fnName}(${this.params.map((p) => this[p]).join("; ")})`;
+      return `${tabs}${this.fnName}(${this.params.map((p) => this[p]).join("; ")})`;
     }
   }
   const els = [
@@ -192,8 +193,7 @@ ${tabs}}`;
       }
       codeString(tabs) {
         return Array.from(this.attributes)
-          .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};\n`)
-          .join("");
+          .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};\n`).join("");
       }
     },
 
