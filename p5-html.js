@@ -180,11 +180,14 @@
         return "else";
       }
     },
-    class IfElse extends P5BlockStarter {
+    class ElseIf extends P5BlockStarter {
       constructor() {
-        super("condition");
+        super(["condition"]);
       }
-    }
+      get fnStr() {
+        return `else if(${this.condition})`;
+      }
+    },
     class State extends P5El {
       constructor() {
         super();
@@ -275,6 +278,7 @@ const sketch = document.querySelector("p5-sketch");
 
 function setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
+  print(sketch.codeString);
 }
 
 function draw() {
