@@ -1,3 +1,5 @@
+import {P5Function} from "./base.js";
+
 const primitives2D = [
   class Arc extends P5Function {
     constructor() {
@@ -63,4 +65,4 @@ const primitives2D = [
   },
 ];
 
-export primitives2D;
+export default {primitives2D};
