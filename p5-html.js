@@ -193,7 +193,7 @@ ${tabs}}`;
       }
       codeString(tabs) {
         return Array.from(this.attributes)
-          .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};\n`).join("");
+          .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};`).join("\n");
       }
     },
 
