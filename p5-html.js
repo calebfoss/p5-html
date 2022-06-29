@@ -1,59 +1,12 @@
-import {primitives2D} from "./modules/shape.js";
 import * as Base from "./modules/base.js";
+import * as Color from "./modules/color.js";
+import * as Logic from "./modules/logic.js";
+import * as Shape from "./modules/shape.js";
 
 (() => {
-
-  const els = [
-
-    class Iterate extends P5BlockStarter {
-      constructor() {
-        super(["test", "init, test, update"]);
-      }
-      get fnName() {
-        if (this.params[0] === "test") return "while";
-        return "for";
-      }
-    },
-    class If extends P5BlockStarter {
-      constructor() {
-        super(["condition"]);
-      }
-    },
-    class Else extends P5BlockStarter {
-      constructor() {
-        super([]);
-      }
-      fnStr(tabs) {
-        return tabs + "else";
-      }
-    },
-    class ElseIf extends P5BlockStarter {
-      constructor() {
-        super(["condition"]);
-      }
-      fnStr(tabs) {
-        return `${tabs}else if(${this.condition})`;
-      }
-    },
-    class State extends P5El {
-      constructor() {
-        super();
-      }
-      codeString(tabs) {
-        return Array.from(this.attributes)
-          .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};`)
-          .join("\n");
-      }
-    },
-
-    class Background extends P5ColorFunction {
-      constructor() {
-        const overloads = ["colorstring, [a]", "gray, [a]", "v1, v2, v3, [a]"];
-        super(overloads);
-      }
-    },...Base,
-    ...primitives2D,
-  ];
+  const els = [Color, Base, Logic, Shape]
+    .map((module) => Object.entries(module))
+    .flat();
   for (const i in els) {
     customElements.define(`p5-${camelToSnake(els[i].name)}`, els[i]);
   }
