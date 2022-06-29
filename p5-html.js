@@ -4,14 +4,11 @@ import * as Logic from "./modules/logic.js";
 import * as Shape from "./modules/shape.js";
 import { camelToSnake } from "./modules/utils.js";
 
-(() => {
-  const els = [Color, Base, Logic, Shape]
-    .map((module) => Object.entries(module).map(([key, value]) => value))
-    .flat();
-  for (const i in els) {
-    customElements.define(`p5-${camelToSnake(els[i].name)}`, els[i]);
-  }
-})();
+//  Create an HTML element for every class from modules
+[Color, Base, Logic, Shape]
+  .map((module) => Object.entries(module).map(([key, value]) => value))
+  .flat()
+  .forEach((el) => customElements.define(`p5-${camelToSnake(el.name)}`, el));
 
 const sketch = document.querySelector("p5-sketch");
 
