@@ -81,20 +81,21 @@
           this.attributes
         );
     }
-    get childStr() {
+    childStr(tabs) {
       return this.children.length
         ? Array.from(this.children)
-            .map((child) => child.codeString)
+            .map((child) => child instanceof P5El ? child.codeString(tabs) : "";
+            })
             .join("\n")
         : "";
     }
-    get codeString() {
+    codeString(tabs) {
       //  Concat settings and function between push and pop
-      return `push(); 
-        ${this.setStr}
-        ${this.fnStr}
-        ${this.childStr}
-        pop();`;
+      return `${tabs}push(); 
+${this.setStr(tabs)}
+${this.fnStr(tabs)}
+${this.childStr(tabs)}
+${tabs}pop();`;
     }
     get fnName() {
       return this.constructor.name.toLowerCase();
@@ -133,11 +134,11 @@
       const innerTabs = tabs + "\t";
       //  Concat settings and function between push and pop
       return `${this.fnStr(tabs)} {
-          push();
-          ${this.setStr(innerTabs)}
-          ${this.childStr(innerTabs)}
-          pop();
-        }`;
+${innerTabs}push();
+${this.setStr(innerTabs)}
+${this.childStr(innerTabs)}
+${innerTabs}pop();
+${tabs}}`;
     }
     //  Create string to call function with provided arguments
     fnStr(tabs) {
@@ -150,9 +151,9 @@
         const overloads = ["width, height, [renderer]"];
         super(overloads);
       }
-      get codeString() {
-        return `${this.setStr}
-        ${this.childStr}`;
+      codeString(tabs) {
+        return `${this.setStr(tabs)}
+        ${this.childStr(tabs)}`;
       }
     },
     class Iterate extends P5BlockStarter {
@@ -173,25 +174,25 @@
       constructor() {
         super([]);
       }
-      get fnStr() {
-        return "else";
+      fnStr(tabs) {
+        return tabs + "else";
       }
     },
     class ElseIf extends P5BlockStarter {
       constructor() {
         super(["condition"]);
       }
-      get fnStr() {
-        return `else if(${this.condition})`;
+      fnStr(tabs) {
+        return `${tabs}else if(${this.condition})`;
       }
     },
     class State extends P5El {
       constructor() {
         super();
       }
-      get codeString() {
+      codeString(tabs) {
         return Array.from(this.attributes)
-          .map((a) => `${a.name} = ${this.getAttribute(a.name)};\n`)
+          .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};\n`)
           .join("");
       }
     },
@@ -275,11 +276,11 @@ const sketch = document.querySelector("p5-sketch");
 
 function setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
-  print(sketch.codeString);
+  print(sketch.codeString("\t"));
 }
 
 function draw() {
-  Function(sketch.codeString)();
+  Function(sketch.codeString("\t"))();
   for (let i = 0; i < sketch.children.length; i++) {
     if (sketch.children[i].hasAttribute("self-destruct")) {
       sketch.children[i].remove();
