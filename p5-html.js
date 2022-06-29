@@ -17,16 +17,16 @@ import { camelToSnake } from "./modules/utils.js";
 const sketch = document.querySelector("p5-sketch");
 console.log(sketch);
 
-window[setup] setup() {
+window["setup"] = function setup() {
   createCanvas(sketch.width, sketch.height).parent(sketch);
   print(sketch.codeString("\t"));
-}
+};
 
-function draw() {
+window["draw"] = function draw() {
   Function(sketch.codeString("\t"))();
   for (let i = 0; i < sketch.children.length; i++) {
     if (sketch.children[i].hasAttribute("self-destruct")) {
       sketch.children[i].remove();
     }
   }
-}
+};

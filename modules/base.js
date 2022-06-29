@@ -124,11 +124,14 @@ class State extends P5El {
   constructor() {
     super();
   }
-  codeString(tabs) {
+  assignString(tabs) {
     return Array.from(this.attributes)
       .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};`)
       .join("\n");
   }
+  codeString(tabs) {
+    return `${setString}`
+  }
 }
 
-export { P5El, P5Function, P5BlockStarter, Setting, Sketch };
+export { P5El, P5Function, P5BlockStarter, Setting, Sketch, State };
