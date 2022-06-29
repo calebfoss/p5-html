@@ -91,8 +91,8 @@
     get codeString() {
       //  Concat settings and function between push and pop
       return `push(); 
-        ${this.setStr}; 
-        ${this.fnStr};
+        ${this.setStr}
+        ${this.fnStr}
         ${this.childStr}
         pop();`;
     }
@@ -100,13 +100,13 @@
       return this.constructor.name.toLowerCase();
     }
     //  Create string to call function with provided arguments
-    get fnStr() {
-      return `${this.fnName}(${this.params.map((p) => this[p])})`;
+    fnStr(tabs) {
+      return `${tabs}${this.fnName}(${this.params.map((p) => this[p])});`;
     }
     //  Create string to call functions for each setting
-    get setStr() {
+    setStr(tabs) {
       return this.settings.length
-        ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n")
+        ? this.settings.map((s) => `${tabs}${s}(${this[s]})`).join(";\n") + ";"
         : "";
     }
   }
@@ -129,17 +129,18 @@
     constructor(overloads) {
       super(overloads);
     }
-    get codeString() {
+    codeString(tabs) {
+      const innerTabs = tabs + "\t";
       //  Concat settings and function between push and pop
-      return `${this.fnStr} {
+      return `${this.fnStr(tabs)} {
           push();
-          ${this.setStr};
-          ${this.childStr}
+          ${this.setStr(innerTabs)}
+          ${this.childStr(innerTabs)}
           pop();
         }`;
     }
     //  Create string to call function with provided arguments
-    get fnStr() {
+    fnStr(tabs) {
       return `${this.fnName}(${this.params.map((p) => this[p]).join("; ")})`;
     }
   }
