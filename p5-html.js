@@ -38,11 +38,10 @@
 
   class P5Function extends P5El {
     #params;
-    #settings;
 
     constructor(overloads) {
       super();
-
+      console.log(this.constructor.name);
       let overloadMatch = false;
       //  Start with overloads with most parameters
       overloads.reverse();
@@ -66,11 +65,11 @@
           );
 
           //  Save settings with atributes
-          this.#settings = allSettings.filter((s) =>
+          this.settings = allSettings.filter((s) =>
             this.hasAttribute(camelToSnake(s))
           );
           //  Create getter for each setting attribute
-          this.#settings.forEach((setting) =>
+          this.settings.forEach((setting) =>
             Object.defineProperty(this, setting, {
               get: () => this.getAttribute(camelToSnake(setting)),
             })
@@ -86,7 +85,7 @@
     }
     get codeString() {
       //  Create string to call functions for each setting
-      const setStr = this.#settings.map((s) => `${s}(${this[s]})`).join(";\n");
+      const setStr = this.settings.map((s) => `${s}(${this[s]})`).join(";\n");
 
       //  Create string to call function with provided arguments
       const fnStr = `${this.fnName}(${this.#params.map((p) => this[p])})`;
@@ -97,9 +96,8 @@
       //  Concat settings and function between push and pop
       return `push(); 
         ${setStr}; 
-        ${fnStr} {
+        ${fnStr};
         ${childStr};
-        }
         pop();`;
     }
     get fnName() {
@@ -120,6 +118,33 @@
       super(overloads);
     }
   }
+
+  class P5BlockStarter extends P5Function {
+    #params;
+    
+    constructor(overloads) {
+      super(overloads);
+      console.log(this.settings);
+    }
+    get codeString() {
+      //  Create string to call functions for each setting
+      const setStr = this.settings.map((s) => `${s}(${this[s]})`).join(";\n");
+
+      //  Create string to call function with provided arguments
+      const fnStr = `${this.fnName}(${this.#params.map((p) => this[p])})`;
+
+      const childStr = Array.from(this.children)
+        .map((child) => child.codeString)
+        .join(";\n");
+      //  Concat settings and function between push and pop
+      return `push(); 
+        ${setStr}; 
+        ${fnStr} {
+        ${childStr};
+        }
+        pop();`;
+    }
+  }
   const els = [
     class Sketch extends P5Function {
       constructor() {
@@ -132,21 +157,24 @@
           .join(";");
       }
     },
-    class Iterate extends P5Function {
+    class Iterate extends P5BlockStarter {
+      #settings;
+      
       constructor() {
         super(["count", "init, test, update"]);
+        console.log(this.settings);
       }
-      get codeString() {
-        const init = this.init || "let i = 0";
-        const test = this.test || `i < ${this.count}`;
-        const update = this.update || "i++";
-        const childCode = Array.from(this.children)
-          .map((c) => c.codeString)
-          .join(";");
-        return `for(${init}; ${test}; ${update}) {
-          ${childCode}
-        }`;
-      }
+      // get codeString() {
+      //   const init = this.init || "let i = 0";
+      //   const test = this.test || `i < ${this.count}`;
+      //   const update = this.update || "i++";
+      //   const childCode = Array.from(this.children)
+      //     .map((c) => c.codeString)
+      //     .join(";");
+      //   return `for(${init}; ${test}; ${update}) {
+      //     ${childCode}
+      //   }`;
+      // }
     },
 
     class State extends P5El {
