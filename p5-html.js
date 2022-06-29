@@ -164,7 +164,21 @@
         return "for";
       }
     },
-
+    class If extends P5BlockStarter {
+      constructor() {
+        super(["condition"]);
+      }
+    },
+    class Else extends P5BlockStarter {
+      constructor() {
+        super([]);
+      }
+    },
+    class ElseIf extends If {
+      constructor() {
+        super();
+      }
+    },
     class State extends P5El {
       constructor() {
         super();
