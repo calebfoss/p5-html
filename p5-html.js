@@ -4,6 +4,8 @@
     camelStr.replace(/(?<!^)[A-Z]/g, (letter) => "-" + letter).toLowerCase();
   const snakeToCamel = (snakeStr) =>
     snakeStr.replace(/-./g, (s) => s[1].toUpperCase());
+
+  //  p5 functions that set transfromation, style, modes, etc.
   const allSettings = [
     "translate",
     "rotate",
@@ -41,6 +43,13 @@
       this.settings.forEach(
         (setting) => (this[setting] = this.getAttribute(camelToSnake(setting)))
       );
+    }
+    //  Create string to call functions for each setting
+    setStr(tabs) {
+      return this.settings.length
+        ? this.settings.map((s) => `${tabs}${s}(${this[s]})`).join(";\n") +
+            ";\n"
+        : "";
     }
   }
 
@@ -87,29 +96,22 @@
             .map((child) =>
               child instanceof P5El ? child.codeString(tabs) : ""
             )
-            .join("\n")
+            .join("\n") + "\n"
         : "";
     }
     codeString(tabs) {
       //  Concat settings and function between push and pop
-      return `${tabs}push(); 
-${this.setStr(tabs)}
-${this.fnStr(tabs)}
-${this.childStr(tabs)}
-${tabs}pop();`;
+      return (
+        `${tabs}push();\n${this.setStr(tabs)}` +
+        `${this.fnStr(tabs)}${this.childStr(tabs)}${tabs}pop();`
+      );
     }
     get fnName() {
       return this.constructor.name.toLowerCase();
     }
     //  Create string to call function with provided arguments
     fnStr(tabs) {
-      return `${tabs}${this.fnName}(${this.params.map((p) => this[p])});`;
-    }
-    //  Create string to call functions for each setting
-    setStr(tabs) {
-      return this.settings.length
-        ? this.settings.map((s) => `${tabs}${s}(${this[s]})`).join(";\n") + ";"
-        : "";
+      return `${tabs}${this.fnName}(${this.params.map((p) => this[p])});\n`;
     }
   }
 
@@ -134,16 +136,17 @@ ${tabs}pop();`;
     codeString(tabs) {
       const innerTabs = tabs + "\t";
       //  Concat settings and function between push and pop
-      return `${this.fnStr(tabs)} {
-${innerTabs}push();
-${this.setStr(innerTabs)}
-${this.childStr(innerTabs)}
-${innerTabs}pop();
-${tabs}}`;
+      return (
+        `${this.fnStr(tabs)} {\n${innerTabs}push();\n` +
+        `${this.setStr(innerTabs)}${this.childStr(innerTabs)}` +
+        `${innerTabs}pop();\n${tabs}}`
+      );
     }
     //  Create string to call function with provided arguments
     fnStr(tabs) {
-      return `${tabs}${this.fnName}(${this.params.map((p) => this[p]).join("; ")})`;
+      return `${tabs}${this.fnName}(${this.params
+        .map((p) => this[p])
+        .join("; ")})`;
     }
   }
   const els = [
@@ -193,7 +196,8 @@ ${tabs}}`;
       }
       codeString(tabs) {
         return Array.from(this.attributes)
-          .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};`).join("\n");
+          .map((a) => `${tabs}${a.name} = ${this.getAttribute(a.name)};`)
+          .join("\n");
       }
     },
 
