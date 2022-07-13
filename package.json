@@ -1,0 +1,27 @@
+{
+  "name": "p5-html",
+  "version": "0.0.1",
+  "description": "A p5 add-on with custom html elements to create sketches declaratively.",
+  "main": "dist/p5-html.js",
+  "source": "src/main.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "build": "npx parcel build  --no-scope-hoist",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npx parcel watch"
+  },
+  "keywords": [
+    "creative",
+    "coding",
+    "p5",
+    "processing"
+  ],
+  "author": "Caleb Foss",
+  "license": "MIT",
+  "devDependencies": {
+    "p5": "latest",
+    "parcel": "latest"
+  }
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="../node_modules/p5/lib/p5.min.js"></script>
+    <script src="../dist/p5-html.js" type="module" defer></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <p5-sketch width="400" height="400" no-stroke>
+      <p5-state test="123" test2="321"></p5-state>
+      <p5-background color="'#ffffff'" self-destruct></p5-background>
+      <p5-iterate init="let x = 0" test="x < width" update="x += width / 10">
+        <p5-iterate
+          init="let y = 0"
+          test="y < height"
+          update="y += height / 10"
+        >
+          <p5-rect
+            x="x"
+            y="y"
+            w="width / 10"
+            h="height / 20"
+            fill="0, map(x, 0, width, 0, 255), map(y, 0, height, 0, 255)"
+            no-stroke
+          ></p5-rect>
+        </p5-iterate>
+      </p5-iterate>
+      <p5-iterate init="let i = 0" test="i < 10" update="i++">
+        <p5-if condition="i % 3 === 0" fill="'yellow'">
+          <p5-circle x="width / 4" y="i" d="10"></p5-circle>
+        </p5-if>
+        <p5-else-if condition="i % 2 === 0" fill="'orange'">
+          <p5-line
+            stroke="0"
+            stroke-weight="4"
+            x1="0"
+            y1="0"
+            x2="width"
+            y2="i"
+          ></p5-line>
+        </p5-else-if>
+        <p5-else fill="'purple'">
+          <p5-square x="width * 0.75" y="i" s="10"></p5-square>
+        </p5-else>
+      </p5-iterate>
+      <p5-circle x="test" y="mouseY" d="40"></p5-circle>
+    </p5-sketch>
+  </body>
+</html>
