@@ -1,4 +1,9 @@
-import { allSettings, camelToSnake, snakeToCamel } from "./utils.js";
+import {
+  allSettings,
+  camelToSnake,
+  snakeToCamel,
+  transforms,
+} from "./utils.js";
 
 export class P5El extends HTMLElement {
   constructor() {
@@ -55,6 +60,22 @@ export class P5Function extends P5El {
         `No overloads for ${this.fnName} match provided parameters:`,
         this.attributes
       );
+    this.transforms = transforms.filter((t) => this.hasAttribute(t));
+    const anchorSet = this.transforms.includes("anchor");
+
+    if (this.transforms.length && !anchorSet) {
+      const x = this.x || this.x1;
+      const y = this.y || this.y1;
+      this.setAttribute("anchor", `${x}, ${y}`);
+      this.setAttribute(this.params[0], 0);
+      this.setAttribute(this.params[1], 0);
+      this[this.params[0]] = 0;
+      this[this.params[1]] = 0;
+      this.transforms.unshift("anchor");
+    }
+    this.transforms.forEach(
+      (transform) => (this[transform] = this.getAttribute(transform))
+    );
   }
   childStr(tabs) {
     return this.children.length
@@ -66,7 +87,7 @@ export class P5Function extends P5El {
   codeString(tabs) {
     //  Concat settings and function between push and pop
     return (
-      `${tabs}push();\n${this.setStr(tabs)}` +
+      `${tabs}push();\n${this.transformStr(tabs)}${this.setStr(tabs)}` +
       `${this.fnStr(tabs)}${this.childStr(tabs)}${tabs}pop();`
     );
   }
@@ -76,6 +97,11 @@ export class P5Function extends P5El {
   //  Create string to call function with provided arguments
   fnStr(tabs) {
     return `${tabs}${this.fnName}(${this.params.map((p) => this[p])});\n`;
+  }
+  transformStr(tabs) {
+    return (
+      this.transforms.map((t) => `${tabs}${t}(${this[t]})`).join(";\n") + ";\n"
+    );
   }
 }
 

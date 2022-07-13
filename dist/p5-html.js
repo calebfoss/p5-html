@@ -3,14 +3,6 @@ const $b68a3fd635640d2f$export$e12f55f9c91df96a = (camelStr)=>camelStr.replace(/
 const $b68a3fd635640d2f$export$b70dcce1c70696bf = (snakeStr)=>snakeStr.replace(/-./g, (s)=>s[1].toUpperCase());
 //  p5 functions that set transfromation, style, modes, etc.
 const $b68a3fd635640d2f$export$79786cd53acde640 = [
-    "translate",
-    "rotate",
-    "rotateX",
-    "rotateY",
-    "rotateZ",
-    "scale",
-    "shearX",
-    "shearY",
     "colorMode",
     "erase",
     "noErase",
@@ -24,7 +16,18 @@ const $b68a3fd635640d2f$export$79786cd53acde640 = [
     "smooth",
     "strokeCap",
     "strokeJoin",
-    "strokeWeight", 
+    "strokeWeight",
+    "angleMode", 
+];
+const $b68a3fd635640d2f$export$63e4f03d302d3e40 = [
+    "anchor",
+    "rotate",
+    "rotateX",
+    "rotateY",
+    "rotateZ",
+    "scale",
+    "shearX",
+    "shearY", 
 ];
 
 
@@ -66,13 +69,26 @@ class $c3ced10543a97d52$export$d546242e33fb8131 extends $c3ced10543a97d52$export
             }
         }
         if (!overloadMatch) console.error(`No overloads for ${this.fnName} match provided parameters:`, this.attributes);
+        this.transforms = (0, $b68a3fd635640d2f$export$63e4f03d302d3e40).filter((t)=>this.hasAttribute(t));
+        const anchorSet = this.transforms.includes("anchor");
+        if (this.transforms.length && !anchorSet) {
+            const x = this.x || this.x1;
+            const y = this.y || this.y1;
+            this.setAttribute("anchor", `${x}, ${y}`);
+            this.setAttribute(this.params[0], 0);
+            this.setAttribute(this.params[1], 0);
+            this[this.params[0]] = 0;
+            this[this.params[1]] = 0;
+            this.transforms.unshift("anchor");
+        }
+        this.transforms.forEach((transform)=>this[transform] = this.getAttribute(transform));
     }
     childStr(tabs) {
         return this.children.length ? Array.from(this.children).map((child)=>child instanceof $c3ced10543a97d52$export$285e69c7b059ee7 ? child.codeString(tabs) : "").join("\n") + "\n" : "";
     }
     codeString(tabs) {
         //  Concat settings and function between push and pop
-        return `${tabs}push();\n${this.setStr(tabs)}` + `${this.fnStr(tabs)}${this.childStr(tabs)}${tabs}pop();`;
+        return `${tabs}push();\n${this.transformStr(tabs)}${this.setStr(tabs)}` + `${this.fnStr(tabs)}${this.childStr(tabs)}${tabs}pop();`;
     }
     get fnName() {
         return this.constructor.name.toLowerCase();
@@ -80,6 +96,9 @@ class $c3ced10543a97d52$export$d546242e33fb8131 extends $c3ced10543a97d52$export
     //  Create string to call function with provided arguments
     fnStr(tabs) {
         return `${tabs}${this.fnName}(${this.params.map((p)=>this[p])});\n`;
+    }
+    transformStr(tabs) {
+        return this.transforms.map((t)=>`${tabs}${t}(${this[t]})`).join(";\n") + ";\n";
     }
 }
 class $c3ced10543a97d52$export$800a87ba475d5e7d extends $c3ced10543a97d52$export$d546242e33fb8131 {
@@ -289,7 +308,9 @@ var $a823b045b564fdba$export$2e2bcd8739ae039 = [
     customElements.define(`p5-${(0, $b68a3fd635640d2f$export$e12f55f9c91df96a)(el.name)}`, el);
 });
 const $95930220612465e5$var$sketch = document.querySelector("p5-sketch");
-p5.prototype.test = 123;
+p5.prototype.anchor = function() {
+    translate(...arguments);
+};
 window["setup"] = function setup() {
     createCanvas($95930220612465e5$var$sketch.width, $95930220612465e5$var$sketch.height).parent($95930220612465e5$var$sketch);
 };

@@ -6,14 +6,6 @@ const snakeToCamel = (snakeStr) =>
 
 //  p5 functions that set transfromation, style, modes, etc.
 const allSettings = [
-  "translate",
-  "rotate",
-  "rotateX",
-  "rotateY",
-  "rotateZ",
-  "scale",
-  "shearX",
-  "shearY",
   "colorMode",
   "erase",
   "noErase",
@@ -28,6 +20,18 @@ const allSettings = [
   "strokeCap",
   "strokeJoin",
   "strokeWeight",
+  "angleMode",
 ];
 
-export { allSettings, camelToSnake, snakeToCamel };
+const transforms = [
+  "anchor",
+  "rotate",
+  "rotateX",
+  "rotateY",
+  "rotateZ",
+  "scale",
+  "shearX",
+  "shearY",
+];
+
+export { allSettings, camelToSnake, snakeToCamel, transforms };
