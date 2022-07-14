@@ -148,6 +148,7 @@ export class P5BlockStarter extends P5Function {
     return `\n${tabs + this.comment}\n${tabs + this.fnStr}\n${
       innerTabs +
       [
+        this.assignStr,
         this.pushStr,
         this.transformStr,
         this.setStr,
