@@ -22,9 +22,10 @@ export class P5El extends HTMLElement {
     return this.vals.map((v) => `let ${v} = ${this[v]};`);
   }
   childStr(tabs) {
-    return Array.from(this.children).map((child) =>
-      child instanceof P5El ? child.codeStr(tabs) : ""
+    const output = Array.from(this.children).map((child) =>
+      child.codeStr?.(tabs)
     );
+    return output;
   }
   codeStr(tabs) {
     //  Concat settings and function between push and pop
@@ -176,12 +177,23 @@ export default [
     constructor() {
       const overloads = ["width, height, [renderer]"];
       super(overloads);
-      const sketch = this;
-      window["setup"] = function () {
-        this.createCanvas(sketch.width, sketch.height).parent(sketch);
-        window["draw"] = Function(sketch.codeStr());
-        console.log(sketch.codeStr());
+      const runCode = () => {
+        const code = [
+          this.vals.map((val) => `window.${val} = ${this[val]}`).join(";\n") +
+            ";",
+          "",
+          "window.setup = function() {",
+          `\tcreateCanvas(${this.width}, ${this.height});`,
+          "}",
+          "",
+          `window.draw = function() {`,
+          this.codeStr(),
+          "}",
+        ].join("\n");
+        Function(code)();
+        console.log(code);
       };
+      window.addEventListener("DOMContentLoaded", runCode);
     }
     codeStr(tabs = "\t") {
       return (
