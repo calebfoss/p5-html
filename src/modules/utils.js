@@ -1,11 +1,11 @@
-//  CASING CONVERTERS
-const camelToSnake = (camelStr) =>
+//  casing converters
+export const camelToSnake = (camelStr) =>
   camelStr.replace(/(?<!^)[A-Z]/g, (letter) => "-" + letter).toLowerCase();
-const snakeToCamel = (snakeStr) =>
+export const snakeToCamel = (snakeStr) =>
   snakeStr.replace(/-./g, (s) => s[1].toUpperCase());
 
-//  p5 functions that set transfromation, style, modes, etc.
-const allSettings = [
+//  functions that set style, modes, etc.
+export const allSettings = [
   "colorMode",
   "erase",
   "noErase",
@@ -23,7 +23,8 @@ const allSettings = [
   "angleMode",
 ];
 
-const transforms = [
+// transformation functions
+export const transforms = [
   "anchor",
   "rotate",
   "rotateX",
@@ -33,5 +34,3 @@ const transforms = [
   "shearX",
   "shearY",
 ];
-
-export { allSettings, camelToSnake, snakeToCamel, transforms };
