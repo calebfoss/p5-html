@@ -2,7 +2,7 @@ import { P5BlockStarter } from "./base.js";
 
 const ifElement = class If extends P5BlockStarter {
   constructor() {
-    super(["condition"]);
+    super(["cond"]);
   }
 };
 
@@ -32,7 +32,7 @@ export default [
       super();
     }
     fnStr(tabs) {
-      return `${tabs}else if(${this.condition})`;
+      return `${tabs}else if(${this.cond})`;
     }
   },
 ];
