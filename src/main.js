@@ -14,3 +14,18 @@ import Shape from "./modules/shape.js";
 p5.prototype.anchor = function () {
   this.translate(...arguments);
 };
+
+p5.prototype.mouseDown = false;
+
+p5.prototype._basemousedown = p5.prototype._onmousedown;
+
+p5.prototype._onmousedown = function (e) {
+  this._basemousedown(e);
+  this._setProperty("mouseDown", true);
+};
+
+p5.prototype.mouseHeld = p5.prototype.mouseIsPressed;
+
+p5.prototype.registerMethod("post", function () {
+  this.mouseDown = false;
+});
