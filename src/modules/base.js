@@ -1,4 +1,9 @@
-import { allSettings, snakeToCamel, transforms } from "./utils.js";
+import {
+  allSettings,
+  camelToSnake,
+  snakeToCamel,
+  transforms,
+} from "./utils.js";
 
 export class P5El extends HTMLElement {
   constructor() {
@@ -14,32 +19,34 @@ export class P5El extends HTMLElement {
     );
   }
   get assignStr() {
-    return this.vals.length
-      ? this.vals.map((v) => `let ${v} = ${this[v]};`)
-      : "";
+    return this.vals.map((v) => `let ${v} = ${this[v]};`);
   }
   childStr(tabs) {
-    return this.children.length
-      ? Array.from(this.children)
-          .map((child) => (child instanceof P5El ? child.codeStr(tabs) : ""))
-          .join("\n" + tabs)
-      : "";
+    return Array.from(this.children).map((child) =>
+      child instanceof P5El ? child.codeStr(tabs) : ""
+    );
   }
   codeStr(tabs) {
     //  Concat settings and function between push and pop
-    return [
-      " ",
-      this.comment,
-      this.assignStr,
-      this.pushStr,
-      this.transformStr,
-      this.setStr,
-      this.fnStr,
-      this.childStr(tabs),
-      this.popStr,
-    ]
-      .filter((s) => s.length)
-      .join("\n" + tabs);
+    return (
+      `\n${tabs}` +
+      [
+        this.comment,
+        this.assignStr,
+        this.pushStr,
+        this.transformStr,
+        this.setStr,
+        this.fnStr,
+        this.childStr(tabs),
+        this.popStr,
+      ]
+        .filter((s) => s.length)
+        .flat()
+        .join("\n" + tabs)
+    );
+  }
+  static get elementName() {
+    return `${camelToSnake(this.name)}-p5`;
   }
   get comment() {
     return `// ${this.outerHTML}`.replace(this.innerHTML, "");
@@ -66,14 +73,10 @@ export class P5El extends HTMLElement {
   }
   //  Create string to call functions for each setting
   get setStr() {
-    return this.settings.length
-      ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n") + ";"
-      : "";
+    return this.settings.map((s) => `${s}(${this[s]});`);
   }
   get transformStr() {
-    return this.transforms.length
-      ? this.transforms.map((t) => `${t}(${this[t]})`).join(";\n") + ";"
-      : "";
+    return this.transforms.map((t) => `${t}(${this[t]});`);
   }
 }
 
@@ -124,8 +127,13 @@ export class P5Function extends P5El {
       }
     }
     console.error(
-      `No overloads for ${this.fnName} match provided parameters:`,
-      this.attributes
+      `${
+        this.constructor.elementName
+      } has the following attributes: ${Array.from(this.attributes)
+        .map(({ name }) => name)
+        .join(", ")}\n` +
+        `but it must have one of the following combinations of attributes: ${overloads}\n\n` +
+        this.outerHTML
     );
   }
 }
@@ -137,17 +145,19 @@ export class P5BlockStarter extends P5Function {
   codeStr(tabs) {
     const innerTabs = tabs + "\t";
     //  Concat settings and function between push and pop
-    return `\n${tabs}${this.comment}\n${[
-      this.fnStr,
-      this.pushStr,
-      this.transformStr,
-      this.setStr,
-      this.childStr(innerTabs),
-      this.popStr,
-    ]
-      .filter((s) => s.length)
-      .join("\n" + innerTabs)}
-      ${tabs}\n}`;
+    return `\n${tabs + this.comment}\n${tabs + this.fnStr}\n${
+      innerTabs +
+      [
+        this.pushStr,
+        this.transformStr,
+        this.setStr,
+        this.childStr(innerTabs),
+        this.popStr,
+      ]
+        .filter((s) => s.length)
+        .flat()
+        .join("\n" + innerTabs)
+    }\n${tabs}}`;
   }
   //  Create string to call function with provided arguments
   get fnStr() {
@@ -161,16 +171,25 @@ export default [
       super();
     }
   },
-
   class Sketch extends P5Function {
     constructor() {
       const overloads = ["width, height, [renderer]"];
       super(overloads);
+      const sketch = this;
+      window["setup"] = function () {
+        this.createCanvas(sketch.width, sketch.height).parent(sketch);
+        window["draw"] = Function(sketch.codeStr());
+        console.log(sketch.codeStr());
+      };
     }
-    codeStr(tabs = "") {
-      return [this.transformStr, this.setStr, this.childStr(tabs)]
-        .filter((s) => s.length)
-        .join("\n");
+    codeStr(tabs = "\t") {
+      return (
+        tabs +
+        [this.transformStr, this.setStr, this.childStr(tabs)]
+          .filter((s) => s.length)
+          .flat()
+          .join("\n" + tabs)
+      );
     }
   },
   class Mutate extends P5El {
@@ -178,7 +197,7 @@ export default [
       super();
     }
     get assignStr() {
-      return this.vals.length ? this.vals.map((v) => `${v} = ${this[v]};`) : "";
+      return this.vals.map((v) => `${v} = ${this[v]};`);
     }
   },
 ];
