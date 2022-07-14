@@ -6,40 +6,45 @@ export class P5El extends HTMLElement {
     [this.settings, this.transforms, this.vals] = this.parseAttributes();
     //  Create getter for each attribute
     Array.from(this.attributes).forEach(({ name }) =>
-      Object.defineProperty(this, name, {
+      Object.defineProperty(this, snakeToCamel(name), {
         get() {
           return this.getAttribute(name);
         },
       })
     );
   }
-  assignStr(tabs) {
+  get assignStr() {
     return this.vals.length
-      ? this.vals.map((v) => `${tabs}let ${v} = ${this.getAttribute(v)};`)
+      ? this.vals.map((v) => `let ${v} = ${this[v]};`)
       : "";
-  }
-  codeStr(tabs) {
-    //  Concat settings and function between push and pop
-    return [
-      this.assignStr(tabs),
-      this.pushStr(tabs),
-      this.transformStr(tabs),
-      this.setStr(tabs),
-      this.fnStr(tabs),
-      this.childStr(tabs),
-      this.popStr(tabs),
-    ]
-      .filter((s) => s.length)
-      .join("\n");
   }
   childStr(tabs) {
     return this.children.length
       ? Array.from(this.children)
           .map((child) => (child instanceof P5El ? child.codeStr(tabs) : ""))
-          .join("\n")
+          .join("\n" + tabs)
       : "";
   }
-  fnStr(tabs) {
+  codeStr(tabs) {
+    //  Concat settings and function between push and pop
+    return [
+      " ",
+      this.comment,
+      this.assignStr,
+      this.pushStr,
+      this.transformStr,
+      this.setStr,
+      this.fnStr,
+      this.childStr(tabs),
+      this.popStr,
+    ]
+      .filter((s) => s.length)
+      .join("\n" + tabs);
+  }
+  get comment() {
+    return `// ${this.outerHTML}`.replace(this.innerHTML, "");
+  }
+  get fnStr() {
     return "";
   }
   parseAttributes() {
@@ -53,25 +58,21 @@ export class P5El extends HTMLElement {
       [[], [], []]
     );
   }
-  pushStr(tabs) {
-    return this.settings.length || this.transforms.length
-      ? `${tabs}push();`
-      : "";
+  get pushStr() {
+    return this.settings.length || this.transforms.length ? `push();` : "";
   }
-  popStr(tabs) {
-    return this.settings.length || this.transforms.length
-      ? `${tabs}pop();`
-      : "";
+  get popStr() {
+    return this.settings.length || this.transforms.length ? `pop();` : "";
   }
   //  Create string to call functions for each setting
-  setStr(tabs) {
+  get setStr() {
     return this.settings.length
-      ? this.settings.map((s) => `${tabs}${s}(${this[s]})`).join(";\n") + ";"
+      ? this.settings.map((s) => `${s}(${this[s]})`).join(";\n") + ";"
       : "";
   }
-  transformStr(tabs) {
+  get transformStr() {
     return this.transforms.length
-      ? this.transforms.map((t) => `${tabs}${t}(${this[t]})`).join(";\n") + ";"
+      ? this.transforms.map((t) => `${t}(${this[t]})`).join(";\n") + ";"
       : "";
   }
 }
@@ -87,8 +88,8 @@ export class P5Function extends P5El {
     return this.constructor.name.toLowerCase();
   }
   //  Create string to call function with provided arguments
-  fnStr(tabs) {
-    return `${tabs}${this.fnName}(${this.params.map((p) => this[p])});`;
+  get fnStr() {
+    return `${this.fnName}(${this.params.map((p) => this[p]).join(", ")});`;
   }
   setAnchorToXY() {
     const x = this.x || this.x1;
@@ -136,23 +137,21 @@ export class P5BlockStarter extends P5Function {
   codeStr(tabs) {
     const innerTabs = tabs + "\t";
     //  Concat settings and function between push and pop
-    return [
-      this.fnStr(tabs),
-      this.pushStr(innerTabs),
-      this.transformStr(innerTabs),
-      this.setStr(innerTabs),
+    return `\n${tabs}${this.comment}\n${[
+      this.fnStr,
+      this.pushStr,
+      this.transformStr,
+      this.setStr,
       this.childStr(innerTabs),
-      this.popStr(innerTabs),
-      tabs + "}",
+      this.popStr,
     ]
       .filter((s) => s.length)
-      .join("\n");
+      .join("\n" + innerTabs)}
+      ${tabs}\n}`;
   }
   //  Create string to call function with provided arguments
-  fnStr(tabs) {
-    return `${tabs}${this.fnName}(${this.params
-      .map((p) => this[p])
-      .join("; ")}) {`;
+  get fnStr() {
+    return `${this.fnName}(${this.params.map((p) => this[p]).join("; ")}) {`;
   }
 }
 
@@ -169,7 +168,7 @@ export default [
       super(overloads);
     }
     codeStr(tabs = "") {
-      return [this.transformStr(tabs), this.setStr(tabs), this.childStr(tabs)]
+      return [this.transformStr, this.setStr, this.childStr(tabs)]
         .filter((s) => s.length)
         .join("\n");
     }
@@ -178,10 +177,8 @@ export default [
     constructor() {
       super();
     }
-    assignStr(tabs) {
-      return this.vals.length
-        ? this.vals.map((v) => `${tabs}${v} = ${this.getAttribute(v)};`)
-        : "";
+    get assignStr() {
+      return this.vals.length ? this.vals.map((v) => `${v} = ${this[v]};`) : "";
     }
   },
 ];
