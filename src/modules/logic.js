@@ -10,7 +10,7 @@ const elseElement = class Else extends BlockStarter {
   constructor(overloads = []) {
     super(overloads);
     if (this.applyTo == p5.prototype.ALL) {
-      console.warning(
+      console.warn(
         `${this.constructor.elementName} apply-all attribute cannot be set to ALL:\n + ${this.html}`
       );
       this.setAttribute("apply-all", p5.prototype.CHILDREN);
@@ -71,7 +71,7 @@ export default [
       return `switch(${this.exp}) {`;
     }
   },
-  class Case extends BlockStarter {
+  class Case extends elseElement {
     constructor() {
       super(["val"]);
     }
