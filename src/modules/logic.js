@@ -1,13 +1,28 @@
-import { P5BlockStarter } from "./base.js";
+import { BlockStarter } from "./base.js";
 
-const ifElement = class If extends P5BlockStarter {
+const ifElement = class If extends BlockStarter {
   constructor() {
     super(["cond"]);
   }
 };
 
+const elseElement = class Else extends BlockStarter {
+  constructor(overloads = []) {
+    super(overloads);
+    if (this.applyTo == p5.prototype.ALL) {
+      console.warning(
+        `${this.constructor.elementName} apply-all attribute cannot be set to ALL:\n + ${this.html}`
+      );
+      this.setAttribute("apply-all", p5.prototype.CHILDREN);
+    }
+  }
+  get fnStr() {
+    return "else {";
+  }
+};
+
 export default [
-  class Iterate extends P5BlockStarter {
+  class Iterate extends BlockStarter {
     constructor() {
       super(["count", "cond", "[init], cond, update"]);
 
@@ -39,22 +54,47 @@ export default [
     }
   },
   ifElement,
-
-  class Else extends P5BlockStarter {
+  elseElement,
+  class ElseIf extends elseElement {
     constructor() {
-      super([]);
+      super(["cond"]);
     }
-    fnStr(tabs) {
-      return tabs + "else";
+    get fnStr() {
+      return `else if(${this.cond}) {`;
     }
   },
-
-  class ElseIf extends ifElement {
+  class Switch extends BlockStarter {
     constructor() {
-      super();
+      super(["exp"]);
     }
-    fnStr(tabs) {
-      return `${tabs}else if(${this.cond})`;
+    get fnStr() {
+      return `switch(${this.exp}) {`;
+    }
+  },
+  class Case extends BlockStarter {
+    constructor() {
+      super(["val"]);
+    }
+    codeStr(tabs) {
+      const innerTabs = tabs + "\t";
+      //  Concat settings and function between push and pop
+      return `\n${tabs + this.comment}\n${tabs + this.fnStr}\n${
+        innerTabs +
+        [
+          this.assignStr,
+          this.pushStr,
+          this.transformStr,
+          this.setStr,
+          this.childStr(innerTabs),
+          this.popStr,
+        ]
+          .filter((s) => s.length)
+          .flat()
+          .join("\n" + innerTabs)
+      }\n${tabs}break;`;
+    }
+    get fnStr() {
+      return `case ${this.val}:`;
     }
   },
 ];
