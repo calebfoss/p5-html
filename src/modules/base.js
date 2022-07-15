@@ -5,72 +5,112 @@ import {
   transforms,
 } from "./utils.js";
 
+p5.prototype.CHILDREN = "children";
+p5.prototype.ALL = "all";
+
 export class P5El extends HTMLElement {
   constructor() {
     super();
     [this.settings, this.transforms, this.vals] = this.parseAttributes();
-    //  Create getter for each attribute
-    Array.from(this.attributes).forEach(({ name }) =>
-      Object.defineProperty(this, snakeToCamel(name), {
-        get() {
-          return this.getAttribute(name);
-        },
-      })
-    );
+    this.createAttributeGetters();
+  }
+  get applyTo() {
+    const val = this.getAttribute("apply-to") || this.getAttribute("applyTo");
+    return p5.prototype[val] || val || p5.prototype.CHILDREN;
   }
   get assignStr() {
     return this.vals.map((v) => `let ${v} = ${this[v]};`);
   }
+  get block() {
+    return this.applyTo === p5.prototype.CHILDREN && this.vals.length;
+  }
+  get blockEnd() {
+    if (this.block) return "}";
+    return "";
+  }
+  get blockStart() {
+    if (this.block) return "{";
+    return "";
+  }
   childStr(tabs) {
-    const output = Array.from(this.children).map((child) =>
-      child.codeStr?.(tabs)
-    );
-    return output;
+    return Array.from(this.children).map((child) => child.codeStr?.(tabs));
   }
   codeStr(tabs) {
+    const blockTab = this.block ? "\t" : "";
+    const top = [this.comment, this.blockStart];
+    const middle = [
+      this.assignStr,
+      this.pushStr,
+      this.transformStr,
+      this.setStr,
+      this.fnStr,
+      this.childStr(tabs),
+      this.popStr,
+    ].map((s) => (s.length ? blockTab + s : s));
+    const bottom = this.blockEnd;
     //  Concat settings and function between push and pop
     return (
       `\n${tabs}` +
-      [
-        this.comment,
-        this.assignStr,
-        this.pushStr,
-        this.transformStr,
-        this.setStr,
-        this.fnStr,
-        this.childStr(tabs),
-        this.popStr,
-      ]
+      top
+        .concat(middle)
+        .concat(bottom)
         .filter((s) => s.length)
-        .flat()
         .join("\n" + tabs)
     );
+  }
+  createAttributeGetters() {
+    const attrs = Array.from(this.attributes);
+
+    //  Find apply-to to remove it from array
+    const applyToIndex = attrs.findIndex(
+      ({ name }) => snakeToCamel(name) === "applyTo"
+    );
+    //  Create getter for each attribute
+    attrs
+      .slice(0, Math.max(applyToIndex, 0))
+      .concat(attrs.slice(applyToIndex + 1))
+      .forEach(({ name }) =>
+        Object.defineProperty(this, snakeToCamel(name), {
+          get() {
+            return this.getAttribute(name);
+          },
+        })
+      );
+  }
+  get comment() {
+    return `// ${this.html}`;
   }
   static get elementName() {
     return `${camelToSnake(this.name)}-p5`;
   }
-  get comment() {
-    return `// ${this.outerHTML}`.replace(this.innerHTML, "");
-  }
+
   get fnStr() {
     return "";
   }
+  get html() {
+    return this.outerHTML.replace(this.innerHTML, "");
+  }
   parseAttributes() {
     return Array.from(this.attributes).reduce(
-      ([s, t, v], { name: att }) => {
-        att = snakeToCamel(att);
-        if (allSettings.includes(att)) return [s.concat(att), t, v];
-        if (transforms.includes(att)) return [s, t.concat(att), v];
-        return [s, t, v.concat(att)];
+      ([s, t, v], { name: attr }) => {
+        attr = snakeToCamel(attr);
+        if (allSettings.includes(attr)) return [s.concat(attr), t, v];
+        if (transforms.includes(attr)) return [s, t.concat(attr), v];
+        if (attr === "applyTo") return [s, t, v];
+        return [s, t, v.concat(attr)];
       },
       [[], [], []]
     );
   }
   get pushStr() {
-    return this.settings.length || this.transforms.length ? `push();` : "";
+    if (this.applyTo == p5.prototype.ALL) return "";
+    if (this.settings.length || this.transforms.length) return "push();";
+    return "";
   }
   get popStr() {
-    return this.settings.length || this.transforms.length ? `pop();` : "";
+    if (this.applyTo == p5.prototype.ALL) return "";
+    if (this.settings.length || this.transforms.length) return "pop();";
+    return "";
   }
   //  Create string to call functions for each setting
   get setStr() {
@@ -139,27 +179,52 @@ export class P5Function extends P5El {
   }
 }
 
-export class P5BlockStarter extends P5Function {
+export class BlockStarter extends P5Function {
   constructor(overloads) {
     super(overloads);
+    if (this.applyTo != p5.prototype.CHILDREN)
+      console.warn(
+        `${this.constructor.elementName} has apply-all set to ALL, but this element can only be applied to children\n${this.html}`
+      );
   }
   codeStr(tabs) {
     const innerTabs = tabs + "\t";
-    //  Concat settings and function between push and pop
-    return `\n${tabs + this.comment}\n${tabs + this.fnStr}\n${
-      innerTabs +
+    const ast = [this.assignStr, this.pushStr, this.transformStr, this.setStr];
+    const comment = `\n${tabs}${this.comment}`;
+    const startBlock = `\n${tabs}${this.fnStr}\n`;
+    const endBlock = `\n${tabs}}`;
+    console.log(
       [
-        this.assignStr,
-        this.pushStr,
-        this.transformStr,
-        this.setStr,
+        comment,
+        startBlock,
+        ast,
         this.childStr(innerTabs),
         this.popStr,
+        endBlock,
       ]
-        .filter((s) => s.length)
         .flat()
-        .join("\n" + innerTabs)
-    }\n${tabs}}`;
+        .filter((s) => s?.length)
+        .join("\n" + tabs)
+    );
+    // Concat settings and function between push and pop
+    if (this.applyTo === p5.prototype.CHILDREN)
+      return [
+        comment,
+        startBlock,
+        [ast, this.childStr(innerTabs), this.popStr]
+          .flat()
+          .map((s) => (s.length ? "\t" + s : s)),
+        endBlock,
+      ]
+        .flat()
+        .filter((s) => s?.length)
+        .join("\n" + tabs);
+    //hsv
+    if (this.applyTo === p5.prototype.ALL)
+      return [comment, ast, startBlock, this.childStr(innerTabs), endBlock]
+        .flat()
+        .filter((s) => s.length)
+        .join("\n" + tabs);
   }
   //  Create string to call function with provided arguments
   get fnStr() {
@@ -182,11 +247,11 @@ export default [
           this.vals.map((val) => `window.${val} = ${this[val]}`).join(";\n") +
             ";",
           "",
-          "window.setup = function() {",
+          "this.setup = function() {",
           `\tcreateCanvas(${this.width}, ${this.height});`,
           "}",
           "",
-          `window.draw = function() {`,
+          `this.draw = function() {`,
           this.codeStr(),
           "}",
         ].join("\n");
