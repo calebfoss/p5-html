@@ -193,19 +193,6 @@ export class BlockStarter extends P5Function {
     const comment = `\n${tabs}${this.comment}`;
     const startBlock = `\n${tabs}${this.fnStr}\n`;
     const endBlock = `\n${tabs}}`;
-    console.log(
-      [
-        comment,
-        startBlock,
-        ast,
-        this.childStr(innerTabs),
-        this.popStr,
-        endBlock,
-      ]
-        .flat()
-        .filter((s) => s?.length)
-        .join("\n" + tabs)
-    );
     // Concat settings and function between push and pop
     if (this.applyTo === p5.prototype.CHILDREN)
       return [
