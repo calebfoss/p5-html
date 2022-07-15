@@ -1,4 +1,9 @@
 import { P5Function } from "./base.js";
+
+p5.prototype.anchor = function () {
+  this.translate(...arguments);
+};
+
 export default [
   class Arc extends P5Function {
     constructor() {
