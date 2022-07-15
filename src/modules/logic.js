@@ -1,19 +1,13 @@
 import { BlockStarter } from "./base.js";
 
-const ifElement = class If extends BlockStarter {
-  constructor() {
-    super(["cond"]);
-  }
-};
-
 const elseElement = class Else extends BlockStarter {
   constructor(overloads = []) {
     super(overloads);
-    if (this.applyTo == p5.prototype.ALL) {
+    if (this.applyTo != this.constructor.applyToDefault) {
       console.warn(
-        `${this.constructor.elementName} apply-all attribute cannot be set to ALL:\n + ${this.html}`
+        `${this.constructor.elementName} apply-all attribute cannot be set to ${this.applyTo}:\n + ${this.html}`
       );
-      this.setAttribute("apply-all", p5.prototype.CHILDREN);
+      this.setAttribute("apply-all", this.constructor.applyToDefault);
     }
   }
   get fnStr() {
@@ -53,7 +47,11 @@ export default [
       return "for";
     }
   },
-  ifElement,
+  class If extends BlockStarter {
+    constructor() {
+      super(["cond"]);
+    }
+  },
   elseElement,
   class ElseIf extends elseElement {
     constructor() {
@@ -63,7 +61,9 @@ export default [
       return `else if(${this.cond}) {`;
     }
   },
-  class Switch extends BlockStarter {
+  class Switch extends elseElement {
+    static applyToDefault = p5.prototype.ALL;
+
     constructor() {
       super(["exp"]);
     }
