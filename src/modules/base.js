@@ -9,6 +9,8 @@ p5.prototype.CHILDREN = "children";
 p5.prototype.ALL = "all";
 
 export class P5El extends HTMLElement {
+  static applyToDefault = p5.prototype.CHILDREN;
+
   constructor() {
     super();
     [this.settings, this.transforms, this.vals] = this.parseAttributes();
@@ -16,7 +18,7 @@ export class P5El extends HTMLElement {
   }
   get applyTo() {
     const val = this.getAttribute("apply-to") || this.getAttribute("applyTo");
-    return p5.prototype[val] || val || p5.prototype.CHILDREN;
+    return p5.prototype[val] || val || this.constructor.applyToDefault;
   }
   get assignStr() {
     return this.vals.map((v) => `let ${v} = ${this[v]};`);
@@ -161,7 +163,9 @@ export class P5Function extends P5El {
       //  If matched overload found
       if (overloadMatch) {
         //  Save parameters with attributes
-        const params = overloadParams.filter((p) => this.vals.includes(p));
+        const params = overloadParams
+          .map((p) => p.replaceAll(/\[|\]/g, ""))
+          .filter((p) => this.vals.includes(p));
         //  Remove arguments from array of values
         const vals = this.vals.filter((v) => !params.includes(v));
         return [params, vals];
