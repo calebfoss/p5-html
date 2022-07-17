@@ -7,7 +7,7 @@ const elseElement = class Else extends BlockStarter {
       console.warn(
         `${this.constructor.elementName} apply-all attribute cannot be set to ${this.applyTo}:\n + ${this.html}`
       );
-      this.setAttribute("apply-all", this.constructor.applyToDefault);
+      this.setAttribute("apply-to", this.constructor.applyToDefault);
     }
   }
   get fnStr() {
