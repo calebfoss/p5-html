@@ -1,6 +1,6 @@
 import { PositionedFunction } from "./base.js";
 
-export default [
+p5.prototype._registerElements(
   class Arc extends PositionedFunction {
     constructor() {
       const overloads = [
@@ -19,7 +19,6 @@ export default [
     constructor() {
       const overloads = ["x, y, d"];
       super(overloads);
-      console.log(this);
     }
   },
   class Line extends PositionedFunction {
@@ -63,5 +62,5 @@ export default [
       const overloads = ["x1, y1, x2, y2, x3, y3"];
       super(overloads);
     }
-  },
-];
+  }
+);
