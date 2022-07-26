@@ -30,7 +30,9 @@ export class P5El extends HTMLElement {
     [this.settings, this.vars] = this.parseAttributes();
     this.createAttributeGetters();
   }
-  static addTab = (line) => (line.length ? "\t" + line : line);
+  static addTab(line) {
+    return line.length && this.isBlock ? "\t" + line : line;
+  }
   anchorFirst() {
     const anchorIndex = this.settings.indexOf("anchor");
     this.settings = ["anchor"].concat(
@@ -56,12 +58,13 @@ export class P5El extends HTMLElement {
     return "";
   }
   get childStrings() {
+    if (this.children.length === 0) return "";
     return Array.from(this.children)
       .map((child) => child.codeStrings)
       .flat();
   }
   get codeStrings() {
-    const lines = [
+    return [
       " ",
       this.comment,
       this.blockStart,
@@ -73,10 +76,9 @@ export class P5El extends HTMLElement {
         ...this.childStrings,
         this.popStr,
         this.innerEnd,
-      ].map(this.isBlock ? P5El.addTab : (line) => line),
+      ].map(P5El.addTab, this),
       this.blockEnd,
-    ];
-    return lines.filter((line) => line.length);
+    ].filter((line) => line.length);
   }
   //  Create getter for each attribute
   createAttributeGetters() {
@@ -220,7 +222,7 @@ export class BlockStarter extends P5Function {
     super(overloads);
   }
   get childStrings() {
-    return super.childStrings.map(this.constructor.addTab);
+    return super.childStrings.map(this.constructor.addTab, this);
   }
   get innerEnd() {
     return "}";
