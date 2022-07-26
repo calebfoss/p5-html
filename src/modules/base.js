@@ -27,53 +27,56 @@ p5.prototype._createFriendlyGlobalFunctionBinder = function (options = {}) {
 export class P5El extends HTMLElement {
   constructor() {
     super();
-    [(this.settings, this.vars)] =
-      this.parseAttributes();
+    [this.settings, this.vars] = this.parseAttributes();
     this.createAttributeGetters();
   }
-  get assignStr() {
+  static addTab = (line) => (line.length ? "\t" + line : line);
+  anchorFirst() {
+    const anchorIndex = this.settings.indexOf("anchor");
+    this.settings = ["anchor"].concat(
+      this.settings.slice(0, anchorIndex),
+      this.settings.slice(anchorIndex + 1)
+    );
+  }
+  get assignStrings() {
     return this.vars.map((attr) => {
-      const init = this.varInitialized(attr) ? "" : "let ";
+      const init = this.varInitialized(attr) || P5El.isP5(attr) ? "" : "let ";
       return `${init}${attr} = ${this[attr]};`;
     });
   }
-  get block() {
-    return this.vars.length || this.settings.length;
+  get isBlock() {
+    return this.vars.length + this.settings.length > 0;
   }
   get blockEnd() {
-    if (this.block) return "}";
+    if (this.isBlock) return "}";
     return "";
   }
   get blockStart() {
-    if (this.block) return "{";
+    if (this.isBlock) return "{";
     return "";
   }
-  childStrings(tabs) {
-    return Array.from(this.children).map((child) => child.codeStr?.(tabs));
+  get childStrings() {
+    return Array.from(this.children)
+      .map((child) => child.codeStrings)
+      .flat();
   }
-  codeStr(tabs = "\t") {
-    const blockTab = this.block ? "\t" : "";
-    const top = [this.comment, this.blockStart];
-    const middle = [
-      this.assignStr,
-      this.pushStr,
-      this.setStr,
-      this.fnStr,
-      this.childStrings(tabs),
-      this.popStr,
-    ]
-      .flat(Infinity)
-      .map((s) => (s.length ? blockTab + s : s));
-    const bottom = this.blockEnd;
-    //  Concat settings and function between push and pop
-    return (
-      `\n${tabs}` +
-      top
-        .concat(middle)
-        .concat(bottom)
-        .filter((s) => s.length)
-        .join("\n" + tabs)
-    );
+  get codeStrings() {
+    const lines = [
+      " ",
+      this.comment,
+      this.blockStart,
+      ...[
+        this.pushStr,
+        ...this.setStrings,
+        ...this.assignStrings,
+        this.fnStr,
+        ...this.childStrings,
+        this.popStr,
+        this.innerEnd,
+      ].map(this.isBlock ? P5El.addTab : (line) => line),
+      this.blockEnd,
+    ];
+    return lines.filter((line) => line.length);
   }
   //  Create getter for each attribute
   createAttributeGetters() {
@@ -91,12 +94,14 @@ export class P5El extends HTMLElement {
   static get elementName() {
     return `${pascalToSnake(this.name)}-_`;
   }
-
   get fnStr() {
     return "";
   }
   get html() {
     return this.outerHTML.replace(this.innerHTML, "");
+  }
+  get innerEnd() {
+    return "";
   }
   static isP5(name) {
     return p5.prototype.hasOwnProperty(name);
@@ -104,12 +109,8 @@ export class P5El extends HTMLElement {
   parseAttributes() {
     return Array.from(this.attributes).reduce(
       ([s, v], { name: attr }) => {
-        if (
-          P5El.isP5(attr) ||
-          p5.prototype._gettersAndSetters.some(obj => obj.name === attr)
-        )
-          return [s.concat(attr), v];
-        if (attr === "apply_to" || attr === "target") return [s, v];
+        //if (attr === "anchor") return [[attr].concat(s), v];
+        if (P5El.isP5(attr)) return [s.concat(attr), v];
         return [s, v.concat(attr)];
       },
       [[], []]
@@ -124,7 +125,7 @@ export class P5El extends HTMLElement {
     return "";
   }
   //  Create string to call functions for each setting
-  get setStr() {
+  get setStrings() {
     return this.settings.map((s) => `${s} = ${this[s]};`);
   }
   varInitialized(varName) {
@@ -211,37 +212,22 @@ export class PositionedFunction extends P5Function {
 export class BlockStarter extends P5Function {
   constructor(overloads) {
     super(overloads);
-    this.vars = this.vars.filter((v) => !this.params.includes(v));
   }
-  codeStr(tabs) {
-    const innerTabs = tabs + "\t";
-    const endBlock = `}`;
-    // Concat settings and function between push and pop
-    return [
-      `\n${tabs}${this.comment}`,
-      this.fnStr,
-      ...[
-        this.assignStr,
-        this.pushStr,
-        this.setStr,
-        this.childStrings(innerTabs),
-        this.popStr,
-      ]
-        .flat(Infinity)
-        .map((s) => (s?.length ? "\t" + s : s)),
-      endBlock,
-    ]
-      .filter((s) => s?.length)
-      .join("\n" + tabs);
+  get childStrings() {
+    return super.childStrings.map(this.constructor.addTab);
   }
+  get innerEnd() {
+    return "}";
+  }
+
   //  Create string to call function with provided arguments
   get fnStr() {
-    return `${this.fnName}(${this.params.map((p) => this[p]).join("; ")}) {`;
+    return `${this.fnName}(${this.params.map((p) => p).join("; ")}) {`;
   }
 }
 
-export default [
-  class Setting extends P5El {
+p5.prototype._registerElements(
+  class Blank extends P5El {
     constructor() {
       super();
     }
@@ -251,26 +237,28 @@ export default [
       const overloads = ["w, h, [renderer]"];
       super(overloads);
       const runCode = () => {
-        console.log(this.codeStr());
-        Function("sketch", this.codeStr())(this);
+        console.log(this.codeString);
+        Function("sketch", this.codeString)(this);
       };
       window.addEventListener("DOMContentLoaded", runCode);
     }
-    codeStr(tabs = "\t") {
+    get isBlock() {
+      return false;
+    }
+    get codeString() {
       return [
         this.comment,
-        this.assignStr,
+        this.assignStrings,
         " ",
         "this.setup = function() {",
-        [this.fnStr, this.setStr].flat().map((s) => (s.length ? "\t" + s : s)),
+        [this.fnStr, this.setStrings].map((s) => (s.length ? "\t" + s : s)),
         "}",
         " ",
         `this.draw = function() {`,
-        this.childStrings(tabs),
+        this.childStrings,
         "}",
       ]
         .flat(Infinity)
-        .filter((s) => s.length)
         .join("\n");
     }
     get fnName() {
