@@ -1,16 +1,27 @@
 import { pascalToCamel, pascalToSnake, snakeToCamel } from "./utils.js";
 
-p5.prototype._gettersAndSetters = [];
-p5.prototype._defineGettersAndSetters = function () {
-  this._gettersAndSetters.forEach(({ name, get, set }) =>
-    Object.defineProperty(this._isGlobal ? window : this, name, { get, set })
-  );
+p5.prototype._customElements = [];
+p5.prototype._registerElements = function () {
+  p5.prototype._customElements.push(...arguments);
 };
-p5.prototype._createCanvasBase = p5.prototype.createCanvas;
-p5.prototype.createCanvas = function () {
-  const canvas = this._createCanvasBase(...arguments);
-  this._defineGettersAndSetters();
-  return canvas;
+
+p5.prototype._defineProperties = function (obj) {
+  for (const p in obj) {
+    p5.prototype[p] = {};
+  }
+  Object.defineProperties(p5.prototype, obj);
+};
+
+p5.prototype._createFriendlyGlobalFunctionBinderBase =
+  p5.prototype._createFriendlyGlobalFunctionBinder;
+p5.prototype._createFriendlyGlobalFunctionBinder = function (options = {}) {
+  return (prop, value) => {
+    const descriptor = Object.getOwnPropertyDescriptor(p5.prototype, prop);
+    const globalObject = options.globalObject || window;
+    if (typeof descriptor === "undefined" || descriptor.writable)
+      return this._createFriendlyGlobalFunctionBinderBase(options)(prop, value);
+    return Object.defineProperty(globalObject, prop, descriptor);
+  };
 };
 
 export class P5El extends HTMLElement {
