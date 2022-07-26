@@ -10,35 +10,12 @@ const elseElement = class Else extends BlockStarter {
 };
 
 p5.prototype._registerElements(
-  class Iterate extends BlockStarter {
+  class RepeatIf extends BlockStarter {
     constructor() {
-      super(["count", "cond", "[init], cond, update"]);
-
-      //  If cond and update provided but not init, use assignment vals as init
-      if (this.update && !this.init) {
-        this.init = this.vals.length
-          ? "let " + this.vals.map((v) => `${v} = ${this[v]}`).join(", ")
-          : "";
-        this.vals = [];
-        this.params.unshift("init");
-      }
-
-      //  Convert count argument to for loop
-      if (this.params[0] === "count") {
-        let charCode = "i".charCodeAt(0);
-        while (typeof window[String.fromCharCode(charCode)] !== "undefined")
-          charCode++;
-        const varName = String.fromCharCode(charCode);
-        Object.defineProperty(this, "fnStr", {
-          get() {
-            return `for(let ${varName} = 0; ${varName} < ${this.count}; ${varName}++) {`;
-          },
-        });
-      }
+      super(["cond"]);
     }
     get fnName() {
-      if (this.params[0] === "cond") return "while";
-      return "for";
+      return "while";
     }
   },
   class If extends BlockStarter {
