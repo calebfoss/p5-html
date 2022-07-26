@@ -32,37 +32,34 @@ p5.prototype._registerElements(
       return `else if(${this.cond}) {`;
     }
   },
-  class Switch extends elseElement {
-    static applyToDefault = p5.prototype.ALL;
-
+  class Switch extends BlockStarter {
     constructor() {
-      super(["exp"]);
-    }
-    get fnStr() {
-      return `switch(${this.exp}) {`;
+      super(["expression"]);
     }
   },
-  class Case extends elseElement {
+  class Case extends BlockStarter {
     constructor() {
       super(["val"]);
     }
-    codeStr(tabs) {
-      const innerTabs = tabs + "\t";
-      //  Concat settings and function between push and pop
-      return `\n${tabs + this.comment}\n${tabs + this.fnStr}\n${
-        innerTabs +
-        [
-          this.assignStr,
+    get blockEnd() {
+      return "break;";
+    }
+    get codeStrings() {
+      return [
+        this.comment,
+        this.fnStr,
+        ...[
+          ...this.assignStrings,
           this.pushStr,
-          this.transformStr,
-          this.setStr,
-          this.childStr(innerTabs),
+          ...this.setStrings,
+          ...this.childStrings,
           this.popStr,
-        ]
-          .filter((s) => s.length)
-          .flat()
-          .join("\n" + innerTabs)
-      }\n${tabs}break;`;
+          this.endInner,
+        ].map(this.constructor.addTab, this),
+      ];
+    }
+    get endInner() {
+      return "break;";
     }
     get fnStr() {
       return `case ${this.val}:`;
