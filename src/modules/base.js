@@ -146,27 +146,33 @@ export class P5Function extends P5El {
   }
   //  Create string to call function with provided arguments
   get fnStr() {
-    return `${this.targetStr}${this.fnName}(${this.params.join(", ")});`;
+    return `${this.varInitialized("output") ? "" : "let "}output = ${
+      this.targetStr
+    }${this.fnName}(${this.params.join(", ")});`;
   }
 
   getParamsFromOverloads(overloads) {
+    //  Check every required parameter has an attribute
+    const isOptional = (param) => param.match(/^\[.*\]$/);
     let overloadMatch = false;
     //  Start with overloads with most parameters
     overloads.reverse();
     if (overloads.length === 0) return [[], this.vars];
     for (const i in overloads) {
       const overloadParams = overloads[i].split(",").map((s) => s.trim());
-      //  Check every required parameter has an attribute
-      const isOptional = (param) => param.match(/^\[.*\]$/);
       overloadMatch = overloadParams.every(
-        (p) => this.vars.includes(p) || isOptional(p) || p === ""
+        (p) =>
+          this.vars.includes(p) ||
+          this.varInitialized(p) ||
+          isOptional(p) ||
+          p === ""
       );
       //  If matched overload found
       if (overloadMatch) {
         //  Save parameters with attributes
         const params = overloadParams
           .map((p) => p.replaceAll(/\[|\]/g, ""))
-          .filter((p) => this.vars.includes(p));
+          .filter((p) => this.vars.includes(p) || this.varInitialized(p));
         return params;
       }
     }
