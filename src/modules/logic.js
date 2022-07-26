@@ -3,12 +3,6 @@ import { BlockStarter } from "./base.js";
 const elseElement = class Else extends BlockStarter {
   constructor(overloads = []) {
     super(overloads);
-    if (this.applyTo != this.constructor.applyToDefault) {
-      console.warn(
-        `${this.constructor.elementName} apply-all attribute cannot be set to ${this.applyTo}:\n + ${this.html}`
-      );
-      this.setAttribute("apply-to", this.constructor.applyToDefault);
-    }
   }
   get fnStr() {
     return "else {";
