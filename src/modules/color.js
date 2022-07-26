@@ -16,28 +16,28 @@ class P5ColorFunction extends P5Function {
   }
 }
 
-p5.prototype._gettersAndSetters.push(
-  {
-    name: "fill_color",
+p5.prototype.setFill = p5.prototype.fill;
+p5.prototype.setStroke = p5.prototype.stroke;
+p5.prototype._defineProperties({
+  fill: {
     get: function () {
-      return this.drawingContext.fillStyle;
+      return this.drawingContext?.fillStyle;
     },
     set: function (val) {
       if (val === this.NONE) this.noFill();
-      else this.fill(val);
+      else this.setFill(val);
     },
   },
-  {
-    name: "stroke_color",
+  stroke: {
     get: function () {
-      return this.drawingContext.strokeStyle;
+      return this.drawingContext?.strokeStyle;
     },
     set: function (val) {
       if (val === this.NONE) this.noStroke();
-      else this.stroke(val);
+      else this.setStroke(val);
     },
-  }
-);
+  },
+});
 
 export default [
   class Background extends P5ColorFunction {
