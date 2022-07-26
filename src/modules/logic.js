@@ -9,7 +9,7 @@ const elseElement = class Else extends BlockStarter {
   }
 };
 
-export default [
+p5.prototype._registerElements(
   class Iterate extends BlockStarter {
     constructor() {
       super(["count", "cond", "[init], cond, update"]);
@@ -90,5 +90,8 @@ export default [
     get fnStr() {
       return `case ${this.val}:`;
     }
-  },
-];
+    get isBlock() {
+      return false;
+    }
+  }
+);
