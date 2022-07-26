@@ -274,12 +274,13 @@ p5.prototype._registerElements(
       return super.fnStr.slice(0, -1) + ".parent(sketch)";
     }
   },
-  class Mutate extends P5El {
+  class Update extends P5El {
     constructor() {
       super();
+      if (this.parentElement.hasAttribute("cond")) {
+        this.vars.push("cond");
+        this.cond = this.parentElement.getAttribute("cond");
+      }
     }
-    get assignStr() {
-      return this.vars.map((v) => `${v} = ${this[v]};`);
-    }
-  },
-];
+  }
+);
