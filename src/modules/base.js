@@ -198,8 +198,8 @@ export class P5Function extends P5El {
 export class PositionedFunction extends P5Function {
   constructor(overloads) {
     super(overloads);
-    const anchorSet = this.vars.includes("anchor");
-    if ((this.rotation || this.scaling) && !anchorSet) this.setAnchorToXY();
+    const anchorSet = this.settings.includes("anchor");
+    if ((this.angle || this.scaling) && !anchorSet) this.setAnchorToXY();
   }
   setAnchorToXY() {
     const x = this.x || this.x1;
