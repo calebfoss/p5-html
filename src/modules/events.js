@@ -50,7 +50,7 @@ p5.prototype.registerMethod("post", function () {
 });
 
 p5.prototype._defineProperties({
-  firstFrame: {
+  first_frame: {
     get: function () {
       return this.frameCount === 1;
     },
