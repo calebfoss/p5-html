@@ -99,12 +99,6 @@ export class P5El extends HTMLElement {
   get fnStr() {
     return "";
   }
-  get hasParentFunction() {
-    if (this.parentElement instanceof P5Function) return true;
-    if (this.parentElement.hasParentFunction)
-      return this.parentElement.hasParentFunction;
-    return false;
-  }
   get html() {
     return this.outerHTML.replace(this.innerHTML, "");
   }
@@ -154,7 +148,7 @@ export class P5Function extends P5El {
   }
   //  Create string to call function with provided arguments
   get fnStr() {
-    return `${this.hasParentFunction ? "" : "let "}output = ${this.targetStr}${
+    return `${this.outputAssignment}${this.targetStr}${
       this.fnName
     }(${this.params.join(", ")});`;
   }
@@ -195,6 +189,16 @@ export class P5Function extends P5El {
         )}\n\n` +
         this.outerHTML
     );
+  }
+  get parentReturns() {
+    if (this.parentElement.returnsVal) return true;
+    if (this.parentElement.parentReturns)
+      return this.parentElement.parentReturns;
+    return false;
+  }
+  get outputAssignment() {
+    if (!this.returnsVal) return "";
+    return this.parentReturns ? "" : "let " + "output = ";
   }
   get targetStr() {
     if (!this.target) return "";
