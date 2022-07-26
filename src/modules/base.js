@@ -78,7 +78,7 @@ export class P5El extends HTMLElement {
     return `// ${this.html}`;
   }
   static get elementName() {
-    return `${pascalToSnake(this.name)}--`;
+    return `${pascalToSnake(this.name)}-_`;
   }
 
   get fnStr() {
