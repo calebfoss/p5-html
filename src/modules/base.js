@@ -24,121 +24,125 @@ p5.prototype._createFriendlyGlobalFunctionBinder = function (options = {}) {
   };
 };
 
-export class P5El extends HTMLElement {
-  constructor() {
-    super();
-    [this.settings, this.vars] = this.parseAttributes();
-    this.createAttributeGetters();
-  }
-  static addTab(line) {
-    return line.length && this.isBlock ? "\t" + line : line;
-  }
-  anchorFirst() {
-    const anchorIndex = this.settings.indexOf("anchor");
-    this.settings = ["anchor"].concat(
-      this.settings.slice(0, anchorIndex),
-      this.settings.slice(anchorIndex + 1)
-    );
-  }
-  get assignStrings() {
-    return this.vars.map((attr) => {
-      const init = this.varInitialized(attr) || P5El.isP5(attr) ? "" : "let ";
-      if (this[attr].length === 0) return `${init}${attr};`;
-      return `${init}${attr} = ${this[attr]};`;
-    });
-  }
-  get isBlock() {
-    return this.vars.length + this.settings.length > 0;
-  }
-  get blockEnd() {
-    if (this.isBlock) return "}";
-    return "";
-  }
-  get blockStart() {
-    if (this.isBlock) return "{";
-    return "";
-  }
-  get childStrings() {
-    if (this.children.length === 0) return [];
-    return Array.from(this.children)
-      .map((child) => child.codeStrings || [])
-      .flat();
-  }
-  get codeStrings() {
-    return [
-      " ",
-      this.comment,
-      this.blockStart,
-      ...[
-        this.pushStr,
-        ...this.setStrings,
-        ...this.assignStrings,
-        this.fnStr,
-        ...this.childStrings,
-        this.innerEnd,
-        this.popStr,
-      ].map(P5El.addTab, this),
-      this.blockEnd,
-    ].filter((line) => line.length);
-  }
-  //  Create getter for each attribute
-  createAttributeGetters() {
-    Array.from(this.attributes).forEach(({ name }) =>
-      Object.defineProperty(this, name, {
-        get() {
-          return this.getAttribute(name);
+const P5Extension = (baseClass) =>
+  class P5Extension extends baseClass {
+    constructor() {
+      super();
+      [this.settings, this.vars] = this.parseAttributes();
+      this.createAttributeGetters();
+    }
+    static addTab(line) {
+      return line.length && this.isBlock ? "\t" + line : line;
+    }
+    anchorFirst() {
+      const anchorIndex = this.settings.indexOf("anchor");
+      this.settings = ["anchor"].concat(
+        this.settings.slice(0, anchorIndex),
+        this.settings.slice(anchorIndex + 1)
+      );
+    }
+    get assignStrings() {
+      return this.vars.map((attr) => {
+        const init =
+          this.varInitialized(attr) || P5Element.isP5(attr) ? "" : "let ";
+        if (this[attr].length === 0) return `${init}${attr};`;
+        return `${init}${attr} = ${this[attr]};`;
+      });
+    }
+    get isBlock() {
+      return this.vars.length + this.settings.length > 0;
+    }
+    get blockEnd() {
+      if (this.isBlock) return "}";
+      return "";
+    }
+    get blockStart() {
+      if (this.isBlock) return "{";
+      return "";
+    }
+    get childStrings() {
+      if (this.children.length === 0) return [];
+      return Array.from(this.children)
+        .map((child) => child.codeStrings || [])
+        .flat();
+    }
+    get codeStrings() {
+      return [
+        " ",
+        this.comment,
+        this.blockStart,
+        ...[
+          this.pushStr,
+          ...this.setStrings,
+          ...this.assignStrings,
+          this.fnStr,
+          ...this.childStrings,
+          this.innerEnd,
+          this.popStr,
+        ].map(P5Element.addTab, this),
+        this.blockEnd,
+      ].filter((line) => line.length);
+    }
+    //  Create getter for each attribute
+    createAttributeGetters() {
+      Array.from(this.attributes).forEach(({ name }) =>
+        Object.defineProperty(this, name, {
+          get() {
+            return this.getAttribute(name);
+          },
+        })
+      );
+    }
+    get comment() {
+      return `// ${this.html}`;
+    }
+    static get elementName() {
+      return `p-${pascalToKebab(this.name)}`;
+    }
+    get fnStr() {
+      return "";
+    }
+    get html() {
+      return this.outerHTML.replace(this.innerHTML, "");
+    }
+    get innerEnd() {
+      return "";
+    }
+    static isP5(name) {
+      return p5.prototype.hasOwnProperty(name);
+    }
+    parseAttributes() {
+      return Array.from(this.attributes).reduce(
+        ([s, v], { name: attr }) => {
+          if (P5Element.isP5(attr)) return [s.concat(attr), v];
+          return [s, v.concat(attr)];
         },
-      })
-    );
-  }
-  get comment() {
-    return `// ${this.html}`;
-  }
-  static get elementName() {
-    return `p-${pascalToKebab(this.name)}`;
-  }
-  get fnStr() {
-    return "";
-  }
-  get html() {
-    return this.outerHTML.replace(this.innerHTML, "");
-  }
-  get innerEnd() {
-    return "";
-  }
-  static isP5(name) {
-    return p5.prototype.hasOwnProperty(name);
-  }
-  parseAttributes() {
-    return Array.from(this.attributes).reduce(
-      ([s, v], { name: attr }) => {
-        if (P5El.isP5(attr)) return [s.concat(attr), v];
-        return [s, v.concat(attr)];
-      },
-      [[], []]
-    );
-  }
-  get pushStr() {
-    if (this.settings.length) return "push();";
-    return "";
-  }
-  get popStr() {
-    if (this.settings.length) return "pop();";
-    return "";
-  }
-  //  Create string to call functions for each setting
-  get setStrings() {
-    return this.settings.map((s) => `${s} = ${this[s]};`);
-  }
-  varInitialized(varName) {
-    if (this.parentElement.hasAttribute(varName)) return true;
-    if (this.parentElement.varInitialized)
-      return this.parentElement.varInitialized(varName);
-    return false;
-  }
-}
+        [[], []]
+      );
+    }
+    get pushStr() {
+      if (this.settings.length) return "push();";
+      return "";
+    }
+    get popStr() {
+      if (this.settings.length) return "pop();";
+      return "";
+    }
+    //  Create string to call functions for each setting
+    get setStrings() {
+      return this.settings.map((s) => `${s} = ${this[s]};`);
+    }
+    varInitialized(varName) {
+      if (this.parentElement.hasAttribute(varName)) return true;
+      if (this.parentElement.varInitialized)
+        return this.parentElement.varInitialized(varName);
+      return false;
+    }
+  };
 
-export class P5Function extends P5El {
+export class P5Element extends P5Extension(HTMLElement) {}
+
+export class P5Function extends P5Element {
   constructor(overloads) {
     super();
     this.overloads = overloads;
@@ -249,60 +253,74 @@ export class BlockStarter extends P5Function {
   }
 }
 
+p5.prototype.assignCanvas = function (c, r) {
+  this.noCanvas();
+  const mainDiv = document.querySelector("main");
+  if (mainDiv.children.length === 0) mainDiv.remove();
+  if (r === this.WEBGL) {
+    this._setProperty("_renderer", new p5.RendererGL(c, this, true));
+  } else {
+    //P2D mode
+    this._setProperty("_renderer", new p5.Renderer2D(c, this, true));
+  }
+  this._renderer._applyDefaults();
+  this._setProperty("_elements", [this._renderer]);
+};
+
+const sketch = class Sketch extends P5Extension(HTMLCanvasElement) {
+  constructor() {
+    super();
+    this.vars.splice(this.vars.indexOf("is"), 1);
+
+    const setParams = (el) => {
+      el.setParamsFromOverloads?.();
+      for (const i in el.children) {
+        setParams(el.children[i]);
+      }
+    };
+
+    const runCode = () => {
+      setParams(this);
+
+      console.log(this.codeString);
+
+      Function("canvas", this.codeString)(this);
+    };
+    window.addEventListener("customElementsDefined", runCode);
+  }
+  get codeString() {
+    return [
+      this.comment,
+
+      " ",
+      "this.setup = function() {",
+      [...this.assignStrings, "assignCanvas(canvas);"].map(
+        this.constructor.addTab,
+        this
+      ),
+      "}",
+      " ",
+      `this.draw = function() {`,
+      [...this.setStrings, ...this.childStrings].map(
+        this.constructor.addTab,
+        this
+      ),
+      "}",
+    ]
+      .flat(Infinity)
+      .join("\n");
+  }
+  static constructorOptions = { extends: "canvas" };
+};
+
 p5.prototype._registerElements(
-  class Blank extends P5El {
+  class _ extends P5Element {
     constructor() {
       super();
     }
   },
-  class Sketch extends P5Function {
-    constructor() {
-      const overloads = ["w, h, [renderer]"];
-      super(overloads);
-
-      const setParams = (el) => {
-        el.setParamsFromOverloads?.();
-        for (const i in el.children) {
-          setParams(el.children[i]);
-        }
-      };
-
-      const runCode = () => {
-        setParams(this);
-
-        console.log(this.codeString);
-
-        Function("sketch", this.codeString)(this);
-      };
-      window.addEventListener("customElementsDefined", runCode);
-    }
-    get codeString() {
-      return [
-        this.comment,
-        this.assignStrings,
-        " ",
-        "this.setup = function() {",
-        [this.fnStr].map(this.constructor.addTab, this),
-        "}",
-        " ",
-        `this.draw = function() {`,
-        [, ...this.setStrings, ...this.childStrings].map(
-          this.constructor.addTab,
-          this
-        ),
-        "}",
-      ]
-        .flat(Infinity)
-        .join("\n");
-    }
-    get fnName() {
-      return "createCanvas";
-    }
-    get fnStr() {
-      return super.fnStr.slice(0, -1) + ".parent(sketch)";
-    }
-  },
-  class Update extends P5El {
+  sketch,
+  class Update extends P5Element {
     constructor() {
       super();
       if (this.parentElement.hasAttribute("cond")) {
