@@ -12,7 +12,11 @@ import "./modules/events.js";
   const customElementsDefined = new Event("customElementsDefined");
   const { _customElements: elements } = p5.prototype;
   for (const i in elements) {
-    customElements.define(elements[i].elementName, elements[i]);
+    customElements.define(
+      elements[i].elementName,
+      elements[i],
+      elements[i].constructorOptions
+    );
   }
   dispatchEvent(customElementsDefined);
 })();
