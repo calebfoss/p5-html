@@ -270,7 +270,12 @@ p5.prototype.assignCanvas = function (c, r) {
 const sketch = class Sketch extends P5Extension(HTMLCanvasElement) {
   constructor() {
     super();
-    this.vars.splice(this.vars.indexOf("is"), 1);
+    //  Remove 'is' attribute from vars
+    this.vars = this.vars.filter((v) => v !== "is");
+    //  Remove 'width' and 'height' from settings
+    this.settings = this.settings.filter(
+      (s) => s !== "width" && s !== "height"
+    );
 
     const setParams = (el) => {
       el.setParamsFromOverloads?.();
@@ -291,26 +296,33 @@ const sketch = class Sketch extends P5Extension(HTMLCanvasElement) {
   get codeString() {
     return [
       this.comment,
+      ...this.initStrings,
 
       " ",
       "this.setup = function() {",
-      [...this.assignStrings, "assignCanvas(canvas);"].map(
+      ...[...this.assignStrings, "assignCanvas(canvas);"].map(
         this.constructor.addTab,
         this
       ),
       "}",
       " ",
       `this.draw = function() {`,
-      [...this.setStrings, ...this.childStrings].map(
+      ...[...this.setStrings, ...this.childStrings].map(
         this.constructor.addTab,
         this
       ),
       "}",
-    ]
-      .flat(Infinity)
-      .join("\n");
+    ].join("\n");
   }
   static constructorOptions = { extends: "canvas" };
+  get initStrings() {
+    return this.vars.map((v) => `let ${v};`);
+  }
+  isBlock = true;
+  varInitialized(varName) {
+    if (this.vars.includes(varName)) return true;
+    return super.varInitialized(varName);
+  }
 };
 
 p5.prototype._registerElements(
