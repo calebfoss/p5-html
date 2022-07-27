@@ -1,4 +1,4 @@
-import { pascalToCamel, pascalToSnake, snakeToCamel } from "./utils.js";
+import { pascalToCamel, pascalToKebab } from "./utils.js";
 
 p5.prototype._customElements = [];
 p5.prototype._registerElements = function () {
@@ -95,7 +95,7 @@ export class P5El extends HTMLElement {
     return `// ${this.html}`;
   }
   static get elementName() {
-    return `${pascalToSnake(this.name)}-_`;
+    return `p-${pascalToKebab(this.name)}`;
   }
   get fnStr() {
     return "";

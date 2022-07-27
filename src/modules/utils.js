@@ -5,6 +5,8 @@ export const kebabToCamel = (kebabStr) =>
   kebabStr.replace(/-./g, (s) => s[1].toUpperCase());
 export const pascalToCamel = (pascalStr) =>
   pascalStr.slice(0, 1).toLowerCase() + pascalStr.slice(1);
+export const pascalToKebab = (pascalStr) =>
+  pascalToCamel(pascalStr).replaceAll(/[A-Z]/g, (c) => "-" + c.toLowerCase());
 export const pascalToSnake = (pascalStr) =>
   pascalToCamel(pascalStr).replaceAll(/[A-Z]/g, (c) => "_" + c.toLowerCase());
 export const snakeToCamel = (snakeStr) =>

@@ -7,39 +7,32 @@
     <meta charset="utf-8" />
   </head>
   <body>
-    <sketch-p5 width="400" height="400" stroke="0" stroke-weight="5">
-      <if-p5 cond="firstFrame">
-        <background-p5 color="255"></background-p5>
-      </if-p5>
-      <if-p5 cond="mouseDragging">
-        <line-p5 x1="pmouseX" y1="pmouseY" x2="mouseX" y2="mouseY"></line-p5>
-      </if-p5>
-      <else-if-p5 cond="mouseUp"
-        ><circle-p5
-          x="mouseX"
-          y="mouseY"
-          d="map(mouseX + mouseY, 0, width + height, 0, 100)"
-        ></circle-p5
-      ></else-if-p5>
-      <if-p5 cond="keyUp" apply-to="ALL" test="123">
-        <switch-p5 exp="key" test="123"
-          ><case-p5 val="'r'"
-            ><setting-p5 fill="'red'" apply-to="ALL"></setting-p5>
-          </case-p5>
-          <case-p5 val="'g'" test="123" apply-to="ALL">
-            <setting-p5 fill="'green'" apply-to="ALL"></setting-p5>
-          </case-p5>
-          <case-p5 val="'b'"
-            ><setting-p5 fill="'blue'" apply-to="ALL"></setting-p5
-          ></case-p5>
-        </switch-p5>
-        <setting-p5 test="123"></setting-p5>
-        <square-p5
-          x="random(width)"
-          y="random(height)"
-          s="random(100)"
-        ></square-p5>
-      </if-p5>
-    </sketch-p5>
+    <p-sketch
+      w="400"
+      h="400"
+      c1
+      c2
+      stroke="NONE"
+      angle_mode="DEGREES"
+      anchor="[width/2, height/2]"
+    >
+      <p-if cond="first_frame">
+        <p-color c="[255, 0, 0]"> <p-update c1="output"></p-update></p-color>
+        <p-color c="[0, 0, 255]"><p-update c2="output"></p-update></p-color>
+        <p-repeat-if a="0" cond="a < 360">
+          <p-lerp-color amt="a / 360">
+            <p-square
+              x="0"
+              y="0"
+              s="width/4"
+              fill="output"
+              angle="a"
+            ></p-square>
+          </p-lerp-color>
+          <p-update a="a + 30"></p-update>
+        </p-repeat-if>
+        <p-circle x="0" y="0" d="width/8" erase="127"></p-circle>
+      </p-if>
+    </p-sketch>
   </body>
 </html>
