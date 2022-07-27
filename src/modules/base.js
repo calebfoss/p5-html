@@ -282,11 +282,14 @@ p5.prototype._registerElements(
         this.assignStrings,
         " ",
         "this.setup = function() {",
-        [this.fnStr, ...this.setStrings].map(this.constructor.addTab, this),
+        [this.fnStr].map(this.constructor.addTab, this),
         "}",
         " ",
         `this.draw = function() {`,
-        this.childStrings.map(this.constructor.addTab, this),
+        [, ...this.setStrings, ...this.childStrings].map(
+          this.constructor.addTab,
+          this
+        ),
         "}",
       ]
         .flat(Infinity)
