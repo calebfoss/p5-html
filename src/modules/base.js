@@ -43,6 +43,7 @@ export class P5El extends HTMLElement {
   get assignStrings() {
     return this.vars.map((attr) => {
       const init = this.varInitialized(attr) || P5El.isP5(attr) ? "" : "let ";
+      if (this[attr].length === 0) return `${init}${attr};`;
       return `${init}${attr} = ${this[attr]};`;
     });
   }
@@ -58,9 +59,9 @@ export class P5El extends HTMLElement {
     return "";
   }
   get childStrings() {
-    if (this.children.length === 0) return "";
+    if (this.children.length === 0) return [];
     return Array.from(this.children)
-      .map((child) => child.codeStrings)
+      .map((child) => child.codeStrings || [])
       .flat();
   }
   get codeStrings() {
@@ -74,8 +75,8 @@ export class P5El extends HTMLElement {
         ...this.assignStrings,
         this.fnStr,
         ...this.childStrings,
-        this.popStr,
         this.innerEnd,
+        this.popStr,
       ].map(P5El.addTab, this),
       this.blockEnd,
     ].filter((line) => line.length);
@@ -111,7 +112,6 @@ export class P5El extends HTMLElement {
   parseAttributes() {
     return Array.from(this.attributes).reduce(
       ([s, v], { name: attr }) => {
-        //if (attr === "anchor") return [[attr].concat(s), v];
         if (P5El.isP5(attr)) return [s.concat(attr), v];
         return [s, v.concat(attr)];
       },
@@ -141,7 +141,7 @@ export class P5El extends HTMLElement {
 export class P5Function extends P5El {
   constructor(overloads) {
     super();
-    this.params = this.getParamsFromOverloads(overloads);
+    this.overloads = overloads;
   }
   get fnName() {
     return pascalToCamel(this.constructor.name);
@@ -153,7 +153,8 @@ export class P5Function extends P5El {
     }(${this.params.join(", ")});`;
   }
 
-  getParamsFromOverloads(overloads) {
+  setParamsFromOverloads() {
+    const { overloads } = this;
     //  Check every required parameter has an attribute
     const isOptional = (param) => param.match(/^\[.*\]$/);
     let overloadMatch = false;
@@ -162,6 +163,7 @@ export class P5Function extends P5El {
     if (overloads.length === 0) return [[], this.vars];
     for (const i in overloads) {
       const overloadParams = overloads[i].split(",").map((s) => s.trim());
+
       overloadMatch = overloadParams.every(
         (p) =>
           this.vars.includes(p) ||
@@ -175,7 +177,8 @@ export class P5Function extends P5El {
         const params = overloadParams
           .map((p) => p.replaceAll(/\[|\]/g, ""))
           .filter((p) => this.vars.includes(p) || this.varInitialized(p));
-        return params;
+        this.params = params;
+        return;
       }
     }
     console.error(
@@ -210,8 +213,6 @@ export class P5Function extends P5El {
 export class PositionedFunction extends P5Function {
   constructor(overloads) {
     super(overloads);
-    const anchorSet = this.settings.includes("anchor");
-    if ((this.angle || this.scaling) && !anchorSet) this.setAnchorToXY();
   }
   setAnchorToXY() {
     const x = this.x || this.x1;
@@ -224,6 +225,10 @@ export class PositionedFunction extends P5Function {
     Object.defineProperty(this, "anchor", {
       get: () => this.getAttribute("anchor"),
     });
+  }
+  setParamsFromOverloads() {
+    super.setParamsFromOverloads();
+    if ((this.angle || this.scaling) && !this.anchor) this.setAnchorToXY();
   }
 }
 
@@ -254,14 +259,22 @@ p5.prototype._registerElements(
     constructor() {
       const overloads = ["w, h, [renderer]"];
       super(overloads);
+
+      const setParams = (el) => {
+        el.setParamsFromOverloads?.();
+        for (const i in el.children) {
+          setParams(el.children[i]);
+        }
+      };
+
       const runCode = () => {
+        setParams(this);
+
         console.log(this.codeString);
+
         Function("sketch", this.codeString)(this);
       };
-      window.addEventListener("DOMContentLoaded", runCode);
-    }
-    get isBlock() {
-      return false;
+      window.addEventListener("customElementsDefined", runCode);
     }
     get codeString() {
       return [
@@ -269,11 +282,11 @@ p5.prototype._registerElements(
         this.assignStrings,
         " ",
         "this.setup = function() {",
-        [this.fnStr, this.setStrings].map((s) => (s.length ? "\t" + s : s)),
+        [this.fnStr, ...this.setStrings].map(this.constructor.addTab, this),
         "}",
         " ",
         `this.draw = function() {`,
-        this.childStrings,
+        this.childStrings.map(this.constructor.addTab, this),
         "}",
       ]
         .flat(Infinity)
