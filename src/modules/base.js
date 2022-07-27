@@ -167,7 +167,6 @@ export class P5Function extends P5Element {
     if (overloads.length === 0) return [[], this.vars];
     for (const i in overloads) {
       const overloadParams = overloads[i].split(",").map((s) => s.trim());
-
       overloadMatch = overloadParams.every(
         (p) =>
           this.vars.includes(p) ||
@@ -271,7 +270,7 @@ const sketch = class Sketch extends P5Extension(HTMLCanvasElement) {
   constructor() {
     super();
     //  Remove 'is' attribute from vars
-    this.vars = this.vars.filter((v) => v !== "is");
+    this.vars = this.vars.filter((v) => v !== "is" && v != "renderer");
     //  Remove 'width' and 'height' from settings
     this.settings = this.settings.filter(
       (s) => s !== "width" && s !== "height"
@@ -300,10 +299,7 @@ const sketch = class Sketch extends P5Extension(HTMLCanvasElement) {
 
       " ",
       "this.setup = function() {",
-      ...[...this.assignStrings, "assignCanvas(canvas);"].map(
-        this.constructor.addTab,
-        this
-      ),
+      ...[...this.assignStrings, this.fnStr].map(this.constructor.addTab, this),
       "}",
       " ",
       `this.draw = function() {`,
@@ -315,6 +311,11 @@ const sketch = class Sketch extends P5Extension(HTMLCanvasElement) {
     ].join("\n");
   }
   static constructorOptions = { extends: "canvas" };
+  get fnStr() {
+    const renderer = this.getAttribute("renderer");
+    if (!renderer) return "assignCanvas(canvas);";
+    return `assignCanvas(canvas, ${renderer});`;
+  }
   get initStrings() {
     return this.vars.map((v) => `let ${v};`);
   }
