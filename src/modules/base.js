@@ -280,8 +280,9 @@ const sketch = class Sketch extends P5Extension(HTMLCanvasElement) {
 
     const setParams = (el) => {
       el.setParamsFromOverloads?.();
-      for (const i in el.children) {
-        setParams(el.children[i]);
+      for (let i = 0; i < el.children.length; i++) {
+        const child = el.children.item(i);
+        setParams(child);
       }
     };
 
