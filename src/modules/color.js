@@ -22,7 +22,8 @@ p5.prototype.setErase = p5.prototype.erase;
 p5.prototype._defineProperties({
   fill: {
     get: function () {
-      return this.drawingContext?.fillStyle;
+      if (!this.drawingContext) return "";
+      return this.color(this.drawingContext.fillStyle);
     },
     set: function (val) {
       if (val === this.NONE) this.noFill();
@@ -31,7 +32,8 @@ p5.prototype._defineProperties({
   },
   stroke: {
     get: function () {
-      return this.drawingContext?.strokeStyle;
+      if (!this.drawingContext) return "";
+      return this.color(this.drawingContext.strokeStyle);
     },
     set: function (val) {
       if (val === this.NONE) this.noStroke();
