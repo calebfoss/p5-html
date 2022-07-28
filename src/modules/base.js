@@ -204,7 +204,9 @@ export class P5Function extends P5Element {
   }
   get outputAssignment() {
     if (!this.returnsVal) return "";
-    return this.parentReturns ? "" : "let " + "output = ";
+    const outputAssignment = "output = ";
+    if (this.parentReturns) return outputAssignment;
+    return "let " + outputAssignment;
   }
   get targetStr() {
     if (!this.target) return "";
